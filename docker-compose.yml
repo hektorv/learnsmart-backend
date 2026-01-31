@@ -200,6 +200,37 @@ services:
     networks:
       - learnsmart-net
 
+  # --- Security ---
+  keycloak-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    networks:
+      - learnsmart-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://keycloak-db:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=password
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    depends_on:
+      - keycloak-db
+    networks:
+      - learnsmart-net
+
 networks:
   learnsmart-net:
     driver: bridge
@@ -211,4 +242,4 @@ volumes:
   assessment_db_data:
   tracking_db_data:
 
-
+  keycloak_db_data:

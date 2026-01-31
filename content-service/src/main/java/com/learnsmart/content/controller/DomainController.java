@@ -25,6 +25,7 @@ public class DomainController {
     }
 
     @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Domain> createDomain(@RequestBody ContentDtos.DomainInput input) {
         Domain d = new Domain();
         d.setCode(input.getCode());

@@ -3,6 +3,7 @@ package com.learnsmart.content.dto;
 import lombok.Data;
 import java.util.UUID;
 import java.util.List;
+import java.util.Map;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
@@ -33,7 +34,7 @@ public class ContentDtos {
         private String description;
         private Integer estimatedMinutes;
         private BigDecimal difficulty;
-        private String metadata; // JSON String
+        private Map<String, Object> metadata;
         private boolean isActive;
     }
 
@@ -53,7 +54,7 @@ public class ContentDtos {
         private String description;
         private Integer estimatedMinutes;
         private BigDecimal difficulty;
-        private String metadata;
+        private Map<String, Object> metadata;
         private boolean isActive;
         private OffsetDateTime createdAt;
         private OffsetDateTime updatedAt;

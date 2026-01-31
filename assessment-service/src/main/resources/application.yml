@@ -18,6 +18,12 @@ spring:
     init:
       mode: always
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://keycloak:8080/realms/learnsmart/protocol/openid-connect/certs
+
 eureka:
   client:
     serviceUrl:

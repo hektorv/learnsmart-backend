@@ -12,6 +12,7 @@ servers:
   - url: http://ai-service:8000
     description: Internal AI service
 
+
 tags:
   - name: Content
     description: Generación de contenido estándar (independiente de usuario)

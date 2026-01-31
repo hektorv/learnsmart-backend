@@ -107,10 +107,7 @@ public class ContentItemServiceImpl implements ContentItemService {
             item.setEstimatedMinutes(draft.getEstimatedMinutes());
             item.setDifficulty(BigDecimal.valueOf(draft.getDifficulty() != null ? draft.getDifficulty() : 0.5));
             item.setType(draft.getType() != null ? draft.getType() : "lesson");
-            item.setMetadata(
-                    "{\"body\": \"" + (draft.getBody() != null ? draft.getBody().replace("\"", "\\\"") : "") + "\"}"); // Simple
-                                                                                                                       // JSON
-                                                                                                                       // storage
+            item.setMetadata(java.util.Map.of("body", draft.getBody() != null ? draft.getBody() : ""));
             item.setActive(true);
             return contentItemRepository.save(item);
         }).toList();

@@ -1,0 +1,161 @@
+package com.learnsmart.profile.service;
+
+import com.learnsmart.profile.dto.ProfileDtos.*;
+import com.learnsmart.profile.model.UserGoal;
+import com.learnsmart.profile.model.UserProfile;
+import com.learnsmart.profile.repository.UserGoalRepository;
+import com.learnsmart.profile.repository.UserProfileRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ProfileServiceImpl {
+
+    private final UserProfileRepository profileRepository;
+    private final UserGoalRepository goalRepository;
+
+    @Transactional
+    public UserProfileResponse registerUser(UserRegistrationRequest request) {
+        // En un escenario real, aquí se llamaría a Keycloak para crear el usuario.
+        // Simularemos que Keycloak nos devuelve un ID
+        String simulatedAuthId = UUID.randomUUID().toString();
+
+        if (profileRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+
+        UserProfile profile = UserProfile.builder()
+                .userId(UUID.randomUUID())
+                .authUserId(simulatedAuthId)
+                .email(request.getEmail())
+                .displayName(request.getDisplayName())
+                .locale(request.getLocale())
+                .timezone(request.getTimezone())
+                .build();
+
+        profile = profileRepository.save(profile);
+        return mapToProfileResponse(profile);
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileResponse getProfile(UUID userId) {
+        return profileRepository.findById(userId)
+                .map(this::mapToProfileResponse)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    // Método auxiliar para buscar por ID de usuario interno (simulo "me" si tuviera
+    // contexto de seguridad)
+    // Para esta prueba, asumiremos que el controller extrae el ID correcto.
+
+    @Transactional
+    public UserProfileResponse updateProfile(UUID userId, UserProfileUpdateRequest request) {
+        UserProfile profile = profileRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (request.getDisplayName() != null)
+            profile.setDisplayName(request.getDisplayName());
+        if (request.getBirthYear() != null)
+            profile.setBirthYear(request.getBirthYear());
+        if (request.getLocale() != null)
+            profile.setLocale(request.getLocale());
+        if (request.getTimezone() != null)
+            profile.setTimezone(request.getTimezone());
+
+        profile = profileRepository.save(profile);
+        return mapToProfileResponse(profile);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserGoalResponse> getUserGoals(UUID userId) {
+        return goalRepository.findByUserId(userId).stream()
+                .map(this::mapToGoalResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserGoalResponse createGoal(UUID userId, UserGoalCreateRequest request) {
+        UserGoal goal = UserGoal.builder()
+                .userId(userId)
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .domain(request.getDomain())
+                .targetLevel(request.getTargetLevel())
+                .dueDate(request.getDueDate())
+                .intensity(request.getIntensity())
+                .isActive(true)
+                .build();
+
+        goal = goalRepository.save(goal);
+        return mapToGoalResponse(goal);
+    }
+
+    @Transactional
+    public UserGoalResponse updateGoal(UUID userId, UUID goalId, UserGoalUpdateRequest request) {
+        UserGoal goal = goalRepository.findById(goalId)
+                .filter(g -> g.getUserId().equals(userId))
+                .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
+
+        if (request.getTitle() != null)
+            goal.setTitle(request.getTitle());
+        if (request.getDescription() != null)
+            goal.setDescription(request.getDescription());
+        if (request.getDomain() != null)
+            goal.setDomain(request.getDomain());
+        if (request.getTargetLevel() != null)
+            goal.setTargetLevel(request.getTargetLevel());
+        if (request.getDueDate() != null)
+            goal.setDueDate(request.getDueDate());
+        if (request.getIntensity() != null)
+            goal.setIntensity(request.getIntensity());
+        if (request.getIsActive() != null)
+            goal.setIsActive(request.getIsActive());
+
+        goal = goalRepository.save(goal);
+        return mapToGoalResponse(goal);
+    }
+
+    @Transactional
+    public void deleteGoal(UUID userId, UUID goalId) {
+        UserGoal goal = goalRepository.findById(goalId)
+                .filter(g -> g.getUserId().equals(userId))
+                .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
+        goalRepository.delete(goal);
+    }
+
+    private UserProfileResponse mapToProfileResponse(UserProfile p) {
+        return UserProfileResponse.builder()
+                .userId(p.getUserId())
+                .authUserId(p.getAuthUserId())
+                .email(p.getEmail())
+                .displayName(p.getDisplayName())
+                .birthYear(p.getBirthYear())
+                .locale(p.getLocale())
+                .timezone(p.getTimezone())
+                .createdAt(p.getCreatedAt())
+                .updatedAt(p.getUpdatedAt())
+                .build();
+    }
+
+    private UserGoalResponse mapToGoalResponse(UserGoal g) {
+        return UserGoalResponse.builder()
+                .id(g.getId())
+                .userId(g.getUserId())
+                .title(g.getTitle())
+                .description(g.getDescription())
+                .domain(g.getDomain())
+                .targetLevel(g.getTargetLevel())
+                .dueDate(g.getDueDate())
+                .intensity(g.getIntensity())
+                .isActive(g.getIsActive())
+                .createdAt(g.getCreatedAt())
+                .updatedAt(g.getUpdatedAt())
+                .build();
+    }
+}

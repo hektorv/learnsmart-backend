@@ -8,6 +8,10 @@ servers:
   - url: /content-service
     description: Base path detrás del API Gateway
 
+
+security:
+  - bearerAuth: []
+
 tags:
   - name: Domains
   - name: Skills
@@ -47,6 +51,7 @@ paths:
     post:
       tags: [Domains]
       summary: Crear dominio
+      description: Requiere rol ADMIN.
       requestBody:
         required: true
         content:
@@ -84,6 +89,7 @@ paths:
     put:
       tags: [Domains]
       summary: Actualizar dominio
+      description: Requiere rol ADMIN.
       parameters:
         - in: path
           name: id
@@ -109,6 +115,7 @@ paths:
     delete:
       tags: [Domains]
       summary: Eliminar dominio
+      description: Requiere rol ADMIN.
       parameters:
         - in: path
           name: id
@@ -166,6 +173,7 @@ paths:
     post:
       tags: [Skills]
       summary: Crear skill
+      description: Requiere rol ADMIN.
       requestBody:
         required: true
         content:
@@ -228,6 +236,7 @@ paths:
     delete:
       tags: [Skills]
       summary: Eliminar skill
+      description: Requiere rol ADMIN.
       parameters:
         - in: path
           name: id
@@ -338,6 +347,7 @@ paths:
     post:
       tags: [ContentItems]
       summary: Crear item de contenido
+      description: Requiere rol ADMIN.
       requestBody:
         required: true
         content:
@@ -351,6 +361,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContentItem'
+
+  /content-items/generate:
+    post:
+      tags: [ContentItems]
+      summary: Generar contenido con IA
+      description: Requiere rol ADMIN. Delega en ai-service para crear borradores de lecciones.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateContentInput'
+      responses:
+        '201':
+          description: Contenido generado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentItem'
 
   /content-items/{id}:
     get:

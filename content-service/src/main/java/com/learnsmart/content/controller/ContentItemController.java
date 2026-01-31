@@ -32,6 +32,7 @@ public class ContentItemController {
     }
 
     @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ContentItem> createContentItem(@RequestBody ContentDtos.ContentItemInput input) {
         Domain domain = domainService.findById(input.getDomainId())
                 .orElseThrow(() -> new RuntimeException("Domain not found"));
@@ -50,6 +51,7 @@ public class ContentItemController {
     }
 
     @PostMapping("/generate")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ContentItem>> generateContent(@RequestBody ContentDtos.GenerateContentInput input) {
         return new ResponseEntity<>(
                 contentService.generateAndSave(input.getDomainId(), input.getNLessons(), input.getTopic()),

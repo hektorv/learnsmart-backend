@@ -3,8 +3,8 @@
 Este documento rastrea el progreso de implementación mapeado a las Historias de Usuario (US) definidas en `user-stories.md`.
 
 ## Estada Actual
-**Última actualización:** 18 Enero 2026
-**Microservicios Iniciados:** `profile-service`
+**Última actualización:** 31 Enero 2026
+**Microservicios Iniciados:** Todos (`profile`, `content`, `planning`, `assessment`, `tracking`, `ai`, `gateway`, `eureka`, `keycloak`)
 **Infraestructura:** `back-end-eureka`, `gateway`
 
 ---
@@ -58,16 +58,49 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 ---
 
 ## 📚 ÉPICA 2: Contenido (`content-service`)
-*Pendiente de inicio.*
+- [x] **Estructura Base**: Spring Boot, JPA, Postgres.
+- [x] **API**:
+  - `GET /domains` (Implemented)
+  - `GET /content-items` (Implemented)
+- [x] **Datos (Seed Data)**:
+  - Dominios: `Backend`, `Frontend`.
+  - Habilidades: `Java`, `Spring`, `React`, `Hooks`.
+  - Contenido: Artículos y Videos de ejemplo.
 
 ## 📅 ÉPICA 3: Planificación (`planning-service`)
-*Pendiente de inicio.*
+- [x] **Estructura Base**: Spring Boot, JPA, Postgres.
+- [x] **Integración**:
+  - Cliente Feign para `profile-service` (Token Relay activo).
+  - Cliente Feign para `content-service` (Token Relay activo).
+  - Cliente Feign para `ai-service`.
+- [x] **API**:
+  - `POST /plans`: Generación orquestada y persistencia verificada.
 
 ## 🎓 ÉPICA 4: Evaluación (`assessment-service`)
-*Pendiente de inicio.*
+- [x] **Estructura Base**: Spring Boot, JPA, Postgres.
+- [x] **API**:
+  - `POST /assessments/session`: Crear sesión.
+  - `POST /assessments/session/{id}/next-item`: Obtener pregunta.
+  - `POST /assessments/session/{id}/response`: Evaluar respuesta.
+- [x] **Datos (Seed Data)**:
+  - Preguntas cargadas para `Java Basics` y `React Basics`.
+  - Opciones y Feedback configurados.
 
 ## 📊 ÉPICA 5: Tracking (`tracking-service`)
-*Pendiente de inicio.*
+- [x] **Estructura Base**: Spring Boot, JPA, Postgres.
+- [x] **API**:
+  - `POST /events`: Registro de eventos asíncrono.
+  - `GET /events`: Consulta histórica.
 
 ## 🤖 ÉPICA 6: Inteligencia Artificial (`ai-service`)
-*Pendiente de inicio.*
+- [x] **Estructura Base**: Python (FastAPI).
+- [x] **Integración LLM**:
+  - Configuración OpenAI API Key verificada.
+  - Endpoints `/plans/generate` y `/assessments/next-item` funcionales.
+
+## 🔒 Seguridad & Gateway
+- [x] **CORS**: Habilitado para `http://localhost:5173` (Frontend).
+- [x] **Auth Global**:
+  - Rutas Públicas: `/auth/**` (Sin redirección login).
+  - Rutas Privadas: `/**` (Token Relay a microservicios).
+

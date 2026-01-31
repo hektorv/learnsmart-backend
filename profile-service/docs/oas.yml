@@ -1,0 +1,442 @@
+openapi: 3.0.3
+info:
+  title: Profile Service API
+  version: 1.0.0
+  description: API para gestionar el perfil, objetivos y preferencias de estudio de los usuarios.
+
+servers:
+  - url: /profile-service
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: Registro de usuarios (creación en Keycloak + perfil).
+  - name: Profile
+    description: Datos básicos de perfil del usuario.
+  - name: Goals
+    description: Objetivos de aprendizaje del usuario.
+  - name: Preferences
+    description: Preferencias de estudio del usuario.
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar un nuevo usuario
+      description: >
+        Crea el usuario en el IdP (Keycloak) y un perfil inicial en el profile-service.
+        Tras el registro, el cliente debe usar el flujo OIDC de Keycloak para obtener tokens.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+      responses:
+        '201':
+          description: Usuario y perfil creados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Usuario ya existe (email duplicado)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profiles/me:
+    get:
+      tags: [Profile]
+      summary: Obtener el perfil del usuario actual
+      responses:
+        '200':
+          description: Perfil del usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          description: Perfil no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Profile]
+      summary: Crear o actualizar el perfil del usuario actual
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdateRequest'
+      responses:
+        '200':
+          description: Perfil actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '201':
+          description: Perfil creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profiles/{userId}:
+    get:
+      tags: [Profile]
+      summary: Obtener el perfil de un usuario por ID (uso administrativo)
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Perfil del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          description: Perfil no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profiles/me/goals:
+    get:
+      tags: [Goals]
+      summary: Listar objetivos del usuario actual
+      responses:
+        '200':
+          description: Lista de objetivos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserGoal'
+    post:
+      tags: [Goals]
+      summary: Crear un objetivo para el usuario actual
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGoalCreateRequest'
+      responses:
+        '201':
+          description: Objetivo creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGoal'
+
+  /profiles/me/goals/{goalId}:
+    put:
+      tags: [Goals]
+      summary: Actualizar un objetivo del usuario actual
+      parameters:
+        - in: path
+          name: goalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGoalUpdateRequest'
+      responses:
+        '200':
+          description: Objetivo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGoal'
+        '404':
+          description: Objetivo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Goals]
+      summary: Eliminar (o desactivar) un objetivo del usuario actual
+      parameters:
+        - in: path
+          name: goalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Objetivo eliminado
+        '404':
+          description: Objetivo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profiles/me/preferences:
+    get:
+      tags: [Preferences]
+      summary: Obtener las preferencias de estudio del usuario actual
+      responses:
+        '200':
+          description: Preferencias del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStudyPreferences'
+        '404':
+          description: Preferencias no configuradas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Preferences]
+      summary: Crear o actualizar las preferencias de estudio del usuario actual
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserStudyPreferencesUpdateRequest'
+      responses:
+        '200':
+          description: Preferencias actualizadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStudyPreferences'
+        '201':
+          description: Preferencias creadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStudyPreferences'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserRegistrationRequest:
+      type: object
+      required:
+        - email
+        - password
+        - displayName
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        displayName:
+          type: string
+          maxLength: 120
+        locale:
+          type: string
+          example: es-ES
+        timezone:
+          type: string
+          example: Europe/Madrid
+        additionalAttributes:
+          type: object
+          additionalProperties: true
+          description: Atributos extra a propagar a Keycloak si aplica.
+
+    UserProfile:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        authUserId:
+          type: string
+          description: ID de usuario en Keycloak (sub o UUID interno).
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        birthYear:
+          type: integer
+          format: int32
+        locale:
+          type: string
+        timezone:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserProfileUpdateRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+        birthYear:
+          type: integer
+          format: int32
+        locale:
+          type: string
+        timezone:
+          type: string
+
+    UserGoal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        domain:
+          type: string
+          example: math
+        targetLevel:
+          type: string
+          example: B2
+        dueDate:
+          type: string
+          format: date
+        intensity:
+          type: string
+          enum: [minimum, standard, aggressive]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserGoalCreateRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        domain:
+          type: string
+        targetLevel:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        intensity:
+          type: string
+          enum: [minimum, standard, aggressive]
+
+    UserGoalUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        domain:
+          type: string
+        targetLevel:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        intensity:
+          type: string
+          enum: [minimum, standard, aggressive]
+        isActive:
+          type: boolean
+
+    UserStudyPreferences:
+      type: object
+      properties:
+        hoursPerWeek:
+          type: number
+          format: float
+        preferredDays:
+          type: array
+          items:
+            type: string
+            example: mon
+        preferredSessionMin:
+          type: integer
+        contentFormatPriority:
+          type: object
+          additionalProperties:
+            type: number
+          example:
+            video: 0.2
+            text: 0.5
+            practice: 0.3
+        notificationsEnabled:
+          type: boolean
+        rawPreferences:
+          type: object
+          additionalProperties: true
+
+    UserStudyPreferencesUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/UserStudyPreferences'
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+

@@ -29,6 +29,7 @@ public class SkillController {
     }
 
     @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Skill> createSkill(@RequestBody ContentDtos.SkillInput input) {
         Domain domain = domainService.findById(input.getDomainId())
                 .orElseThrow(() -> new RuntimeException("Domain not found"));

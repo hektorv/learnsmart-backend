@@ -41,7 +41,8 @@ public class ContentItem {
     private BigDecimal difficulty;
 
     @Column(columnDefinition = "TEXT")
-    private String metadata;
+    @Convert(converter = JsonConverter.class)
+    private java.util.Map<String, Object> metadata;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
