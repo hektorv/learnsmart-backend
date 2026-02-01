@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import uuid
 from app.services.llm_service import llm_service
+from app.services.input_validator import InputValidator
 
 app = FastAPI(title="AI Service")
 
@@ -61,10 +62,16 @@ def health():
 @app.post("/v1/plans/generate", response_model=GeneratePlanResponse)
 def generate_plan(request: GeneratePlanRequest):
     try:
+        # Serialize for validation (simple approach) or validate specific fields
+        # Ideally, we validate the dict structure recursively
+        val_profile = InputValidator.validate_obj(request.profile)
+        val_goals = InputValidator.validate_obj(request.goals)
+        val_catalog = InputValidator.validate_obj(request.contentCatalog)
+
         result = llm_service.generate_plan(
-            user_profile=request.profile,
-            goals=request.goals,
-            content_catalog=request.contentCatalog
+            user_profile=val_profile,
+            goals=val_goals,
+            content_catalog=val_catalog
         )
         # The LLM should return keys "plan" and "rawModelOutput" or similar structure
         # We ensure strict validation in a production env, here we pass through for flexibility
@@ -72,21 +79,29 @@ def generate_plan(request: GeneratePlanRequest):
             plan=result.get("plan", {}),
             rawModelOutput=result.get("rawModelOutput", {})
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/v1/plans/replan", response_model=ReplanResponse)
 def replan(request: ReplanRequest):
     try:
+        val_plan = InputValidator.validate_obj(request.currentPlan)
+        val_events = InputValidator.validate_obj(request.recentEvents)
+        val_skill = InputValidator.validate_obj(request.updatedSkillState)
+
         result = llm_service.replan(
-            current_plan=request.currentPlan,
-            recent_events=request.recentEvents,
-            skill_state=request.updatedSkillState
+            current_plan=val_plan,
+            recent_events=val_events,
+            skill_state=val_skill
         )
         return ReplanResponse(
             plan=result.get("plan", request.currentPlan),
             changeSummary=result.get("changeSummary", "No changes applied.")
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -98,15 +113,20 @@ def next_item(request: NextItemRequest):
         if request.skillState:
              mastery = sum([s.get("mastery", 0.5) for s in request.skillState]) / len(request.skillState)
 
+        val_domain = InputValidator.validate_text(request.domain)
+        val_history = InputValidator.validate_obj(request.recentHistory)
+
         result = llm_service.generate_next_item(
-            domain=request.domain,
+            domain=val_domain,
             mastery=mastery,
-            recent_history=request.recentHistory
+            recent_history=val_history
         )
         return NextItemResponse(
             item=result.get("item", {}),
             rationale=result.get("rationale", "")
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -137,10 +157,15 @@ def feedback(request: FeedbackRequest):
         # Let's assume we want AI to provide the explanation.
         is_correct = (user_sel_id == correct_opt.get("optionId")) if correct_opt and user_sel_id else False
 
+        # Validate text inputs
+        val_stem = InputValidator.validate_text(stem, "item_stem")
+        val_correct = InputValidator.validate_text(correct_stmt, "correct_answer")
+        val_user = InputValidator.validate_text(user_stmt, "user_answer")
+
         result = llm_service.generate_feedback(
-            item_stem=stem,
-            correct_answer=correct_stmt,
-            user_answer=user_stmt,
+            item_stem=val_stem,
+            correct_answer=val_correct,
+            user_answer=val_user,
             is_correct=is_correct
         )
         
@@ -149,6 +174,8 @@ def feedback(request: FeedbackRequest):
             feedbackMessage=result.get("feedbackMessage", ""),
             remediationSuggestions=result.get("remediationSuggestions", [])
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
@@ -169,12 +196,18 @@ class GenerateContentResponse(BaseModel):
 def generate_lessons(request: GenerateContentRequest):
     try:
         # Map request to service
+        # Validate text inputs
+        val_domain = InputValidator.validate_text(request.domain)
+        val_locale = InputValidator.validate_text(request.locale)
+
         result = llm_service.generate_lessons(
-            domain=request.domain,
+            domain=val_domain,
             n_lessons=request.nLessons,
-            locale=request.locale
+            locale=val_locale
         )
         return GenerateContentResponse(lessons=result.get("lessons", []))
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 if __name__ == "__main__":
