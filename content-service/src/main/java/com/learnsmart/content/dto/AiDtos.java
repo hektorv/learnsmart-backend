@@ -25,6 +25,7 @@ public class AiDtos {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class GenerateLessonsResponse {
         private List<ContentLessonDraft> lessons;
     }
@@ -32,6 +33,7 @@ public class AiDtos {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class ContentLessonDraft {
         private String tempId;
         private String title;

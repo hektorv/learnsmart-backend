@@ -125,7 +125,20 @@ class LLMService:
         
         system_prompt = prompts.CONTENT_GENERATION_SYSTEM_PROMPT.format(domain=domain, n_lessons=n_lessons, locale=locale)
         user_prompt = f"Generate {n_lessons} lessons for topic: <topic>{domain}</topic>"
-        return self._call_llm(system_prompt, user_prompt)
+        
+        # 1. Generate Draft
+        draft_response = self._call_llm(system_prompt, user_prompt)
+        
+        # 2. Refine Draft (Auto-Refinement)
+        try:
+            refinement_system_prompt = prompts.CONTENT_REFINEMENT_PROMPT
+            refinement_user_prompt = f"Refine this draft:\n{json.dumps(draft_response)}"
+            final_response = self._call_llm(refinement_system_prompt, refinement_user_prompt)
+            print(f"Refinement successful for {domain}")
+            return final_response
+        except Exception as e:
+            print(f"Refinement failed: {e}. Returning draft.")
+            return draft_response
 
     # --- Mocks for Fallback ---
     def _mock_plan(self, profile):

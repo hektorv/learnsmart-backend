@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "ai-service", url = "${AI_SERVICE_URL:http://ai-service:8000}", path = "/v1")
 public interface AiServiceClient {
 
-    @PostMapping("/content/generate-lessons")
+    @PostMapping("/contents/lessons")
     AiDtos.GenerateLessonsResponse generateLessons(@RequestBody AiDtos.GenerateLessonsRequest request);
 }

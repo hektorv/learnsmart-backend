@@ -1,6 +1,7 @@
 package com.learnsmart.profile.dto;
 
 import lombok.Data;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
@@ -11,6 +12,7 @@ public class ProgressDtos {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class UserProgressResponse {
         private ProfileInfo profile;
         private List<GoalProgress> goals;
@@ -22,6 +24,7 @@ public class ProgressDtos {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class ProfileInfo {
         private String userId;
         private String displayName;
@@ -30,6 +33,7 @@ public class ProgressDtos {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class GoalProgress {
         private UUID goalId;
         private String title;
@@ -39,6 +43,7 @@ public class ProgressDtos {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class PlanProgress {
         private UUID planId;
         private String goalId;
@@ -51,6 +56,7 @@ public class ProgressDtos {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class SkillMasteryShort {
         private UUID skillId;
         private String skillName;
@@ -60,6 +66,7 @@ public class ProgressDtos {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class ActivitySummary {
         private Double totalHours;
         private Integer currentStreak;

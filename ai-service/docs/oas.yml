@@ -25,7 +25,7 @@ paths:
   # ============================================================
   #            CONTENT  (para content-service)
   # ============================================================
-  /v1/content/generate-lessons:
+  /v1/contents/lessons:
     post:
       tags: [Content]
       summary: Generar lecciones estándar para el catálogo
@@ -48,7 +48,7 @@ paths:
         '500':
           description: Error interno del servicio de IA
 
-  /v1/content/generate-assessment-items:
+  /v1/contents/assessment-items:
     post:
       tags: [Content]
       summary: Generar ítems de evaluación estándar (banco de preguntas)
@@ -74,7 +74,7 @@ paths:
   # ============================================================
   #            PLANNING  (para planning-service)
   # ============================================================
-  /v1/plans/generate:
+  /v1/plans:
     post:
       tags: [Planning]
       summary: Generar un plan de aprendizaje personalizado
@@ -97,7 +97,7 @@ paths:
         '500':
           description: Error interno del servicio de IA
 
-  /v1/plans/replan:
+  /v1/plans/adjustments:
     post:
       tags: [Planning]
       summary: Reajustar un plan existente en función del progreso del usuario
@@ -123,7 +123,7 @@ paths:
   # ============================================================
   #            ASSESSMENT  (para assessment-service)
   # ============================================================
-  /v1/assessments/next-item:
+  /v1/assessments/items:
     post:
       tags: [Assessment]
       summary: Obtener el siguiente ítem de evaluación adaptativo

@@ -30,7 +30,7 @@ public interface Clients {
 
     @FeignClient(name = "ai-service", url = "${AI_SERVICE_URL:http://ai-service:8000}", path = "/v1")
     public interface AiClient {
-        @PostMapping("/plans/generate")
+        @PostMapping("/plans")
         ExternalDtos.GeneratePlanResponse generatePlan(@RequestBody ExternalDtos.GeneratePlanRequest request);
     }
 }

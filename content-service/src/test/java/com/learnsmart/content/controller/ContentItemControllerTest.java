@@ -1,0 +1,173 @@
+package com.learnsmart.content.controller;
+
+import com.learnsmart.content.dto.ContentDtos;
+import com.learnsmart.content.model.ContentItem;
+import com.learnsmart.content.model.Domain;
+import com.learnsmart.content.service.ContentItemService;
+import com.learnsmart.content.service.DomainService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ContentItemControllerTest {
+
+    @Mock
+    private ContentItemService contentService;
+
+    @Mock
+    private DomainService domainService;
+
+    @InjectMocks
+    private ContentItemController controller;
+
+    @Test
+    void testGetContentItems() {
+        UUID domainId = UUID.randomUUID();
+        ContentItem item = new ContentItem();
+        item.setId(UUID.randomUUID());
+        item.setTitle("Title");
+
+        when(contentService.findAll(eq(domainId), any(), any(), eq(true), anyInt(), anyInt()))
+                .thenReturn(List.of(item));
+
+        List<ContentDtos.ContentItemResponse> result = controller.getContentItems(domainId, "video", 0, 10);
+        assertEquals(1, result.size());
+        assertEquals("Title", result.get(0).getTitle());
+    }
+
+    @Test
+    void testCreateContentItem_Success() {
+        UUID domainId = UUID.randomUUID();
+        ContentDtos.ContentItemInput input = new ContentDtos.ContentItemInput();
+        input.setDomainId(domainId);
+        input.setTitle("New Item");
+
+        Domain domain = new Domain();
+        domain.setId(domainId);
+
+        when(domainService.findById(domainId)).thenReturn(Optional.of(domain));
+        when(contentService.create(any(ContentItem.class))).thenAnswer(i -> {
+            ContentItem c = i.getArgument(0);
+            c.setId(UUID.randomUUID());
+            return c;
+        });
+
+        ResponseEntity<ContentItem> response = controller.createContentItem(input);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody().getId());
+    }
+
+    @Test
+    void testCreateContentItem_DomainNotFound() {
+        UUID domainId = UUID.randomUUID();
+        ContentDtos.ContentItemInput input = new ContentDtos.ContentItemInput();
+        input.setDomainId(domainId);
+
+        when(domainService.findById(domainId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> controller.createContentItem(input));
+    }
+
+    @Test
+    void testGenerateContent() {
+        UUID domainId = UUID.randomUUID();
+        ContentDtos.GenerateContentInput input = new ContentDtos.GenerateContentInput();
+        input.setDomainId(domainId);
+        input.setNLessons(5);
+        input.setTopic("Math");
+
+        when(contentService.generateAndSave(domainId, 5, "Math")).thenReturn(Collections.emptyList());
+
+        ResponseEntity<List<ContentItem>> response = controller.generateContent(input);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        verify(contentService).generateAndSave(domainId, 5, "Math");
+    }
+
+    @Test
+    void testGetContentItem_Found() {
+        UUID id = UUID.randomUUID();
+        ContentItem item = new ContentItem();
+        item.setId(id);
+
+        when(contentService.findById(id)).thenReturn(Optional.of(item));
+
+        ResponseEntity<ContentDtos.ContentItemResponse> response = controller.getContentItem(id);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(id, response.getBody().getId());
+    }
+
+    @Test
+    void testGetContentItem_NotFound() {
+        UUID id = UUID.randomUUID();
+        when(contentService.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> controller.getContentItem(id));
+    }
+
+    @Test
+    void testUpdateContentItem_Found() {
+        UUID id = UUID.randomUUID();
+        ContentDtos.ContentItemInput input = new ContentDtos.ContentItemInput();
+        input.setTitle("Updated");
+
+        ContentItem updated = new ContentItem();
+        updated.setId(id);
+        updated.setTitle("Updated");
+
+        when(contentService.update(eq(id), any(ContentItem.class))).thenReturn(Optional.of(updated));
+
+        ResponseEntity<ContentDtos.ContentItemResponse> response = controller.updateContentItem(id, input);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Updated", response.getBody().getTitle());
+    }
+
+    @Test
+    void testUpdateContentItem_NotFound() {
+        UUID id = UUID.randomUUID();
+        when(contentService.update(eq(id), any(ContentItem.class))).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class,
+                () -> controller.updateContentItem(id, new ContentDtos.ContentItemInput()));
+    }
+
+    @Test
+    void testDeleteContentItem() {
+        UUID id = UUID.randomUUID();
+        doNothing().when(contentService).delete(id);
+
+        ResponseEntity<Void> response = controller.deleteContentItem(id);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(contentService).delete(id);
+    }
+
+    @Test
+    void testAddSkills() {
+        UUID id = UUID.randomUUID();
+        ContentDtos.ContentItemSkillInput skillInput = new ContentDtos.ContentItemSkillInput();
+        skillInput.setSkillId(UUID.randomUUID());
+        skillInput.setWeight(0.5);
+
+        doNothing().when(contentService).updateSkillAssociations(eq(id), anyList(), anyList());
+
+        ResponseEntity<Void> response = controller.addSkills(id, List.of(skillInput));
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(contentService).updateSkillAssociations(eq(id), anyList(), anyList());
+    }
+}

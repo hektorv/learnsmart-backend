@@ -59,7 +59,7 @@ class FeedbackResponse(BaseModel):
 def health():
     return {"status": "ok", "provider": llm_service.model if llm_service.client else "mock"}
 
-@app.post("/v1/plans/generate", response_model=GeneratePlanResponse)
+@app.post("/v1/plans", response_model=GeneratePlanResponse)
 def generate_plan(request: GeneratePlanRequest):
     try:
         # Serialize for validation (simple approach) or validate specific fields
@@ -73,8 +73,6 @@ def generate_plan(request: GeneratePlanRequest):
             goals=val_goals,
             content_catalog=val_catalog
         )
-        # The LLM should return keys "plan" and "rawModelOutput" or similar structure
-        # We ensure strict validation in a production env, here we pass through for flexibility
         return GeneratePlanResponse(
             plan=result.get("plan", {}),
             rawModelOutput=result.get("rawModelOutput", {})
@@ -84,7 +82,7 @@ def generate_plan(request: GeneratePlanRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/v1/plans/replan", response_model=ReplanResponse)
+@app.post("/v1/plans/adjustments", response_model=ReplanResponse)
 def replan(request: ReplanRequest):
     try:
         val_plan = InputValidator.validate_obj(request.currentPlan)
@@ -105,7 +103,7 @@ def replan(request: ReplanRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/v1/assessments/next-item", response_model=NextItemResponse)
+@app.post("/v1/assessments/items", response_model=NextItemResponse)
 def next_item(request: NextItemRequest):
     try:
         # Heuristic: Calculate average mastery from skillState for prompt context
@@ -148,13 +146,6 @@ def feedback(request: FeedbackRequest):
         user_stmt = user_opt.get("statement") if user_opt else str(response.get("openAnswer", ""))
         
         # Determine correctness (if not already simulated by frontend, AI validates it)
-        # In a real system, the backend validates correctness deterministically for Quiz.
-        # But for 'Open Answer' AI must judge. Here we assume AI judges.
-        
-        # If the request already contains correctness info (e.g. from Assessment Service), use it.
-        # But the prompt expects us to judge or explain.
-        
-        # Let's assume we want AI to provide the explanation.
         is_correct = (user_sel_id == correct_opt.get("optionId")) if correct_opt and user_sel_id else False
 
         # Validate text inputs
@@ -178,8 +169,6 @@ def feedback(request: FeedbackRequest):
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 class GenerateContentRequest(BaseModel):
     domain: str # Code or Name
@@ -192,11 +181,9 @@ class GenerateContentRequest(BaseModel):
 class GenerateContentResponse(BaseModel):
     lessons: List[Dict[str, Any]]
 
-@app.post("/v1/content/generate-lessons", response_model=GenerateContentResponse)
+@app.post("/v1/contents/lessons", response_model=GenerateContentResponse)
 def generate_lessons(request: GenerateContentRequest):
     try:
-        # Map request to service
-        # Validate text inputs
         val_domain = InputValidator.validate_text(request.domain)
         val_locale = InputValidator.validate_text(request.locale)
 
@@ -210,6 +197,54 @@ def generate_lessons(request: GenerateContentRequest):
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class GenerateAssessmentItemsRequest(BaseModel):
+    domain: str
+    skillIds: Optional[List[str]] = None
+    nItems: int = 5
+    itemType: str = "multiple_choice"
+    difficultyRange: Optional[Dict[str, float]] = None
+    locale: str = "es-ES"
+
+class GenerateAssessmentItemsResponse(BaseModel):
+    items: List[Dict[str, Any]]
+
+@app.post("/v1/contents/assessment-items", response_model=GenerateAssessmentItemsResponse)
+def generate_assessment_items(request: GenerateAssessmentItemsRequest):
+    try:
+        val_domain = InputValidator.validate_text(request.domain)
+        
+        # MOCK IMPLEMENTATION (Should call llm_service)
+        # Assuming llm_service has a method or using generic mock for now
+        # Ideally we add generate_assessment_items to llm_service.py
+        
+        # Calling a hypothetical method (that we will add/ensure exists)
+        # result = llm_service.generate_items(...)
+        
+        # For now, inline mock or we update llm_service next.
+        # Let's return a mock structure.
+        
+        items = []
+        for i in range(request.nItems):
+            items.append({
+                "tempId": str(uuid.uuid4()),
+                "domain": request.domain,
+                "type": request.itemType,
+                "stem": f"Generated question {i+1} for {request.domain}",
+                "options": [
+                    {"optionId": "a", "statement": "Option A (Correct)", "isCorrect": True},
+                    {"optionId": "b", "statement": "Option B", "isCorrect": False}
+                ],
+                "difficulty": 0.5
+            })
+            
+        return GenerateAssessmentItemsResponse(items=items)
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
