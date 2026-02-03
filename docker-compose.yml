@@ -112,6 +112,7 @@ services:
       - "8083:8083"
     environment:
       - PORT=8083
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=TRACE
       - EUREKA_URL=http://eureka:8761/eureka/
       - DB_HOST=planning-db
       - DB_NAME=planning_db

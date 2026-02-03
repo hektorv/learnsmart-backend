@@ -140,6 +140,30 @@ class LLMService:
             print(f"Refinement failed: {e}. Returning draft.")
             return draft_response
 
+    def generate_diagnostic_test(self, domain: str, level: str, n_questions: int) -> Dict[str, Any]:
+        if not self.client:
+            # Fallback Mock
+            return {
+                "questions": [
+                    {
+                        "stem": f"Mock diagnostic question for {domain} ({level})",
+                        "options": [
+                             {"text": "Correct Option", "isCorrect": True},
+                             {"text": "Wrong Option", "isCorrect": False}
+                        ],
+                        "difficulty": 0.5,
+                        "topic": "Fundamentals"
+                    }
+                ]
+            }
+
+        system_prompt = prompts.DIAGNOSTIC_GENERATION_PROMPT.format(
+            domain=domain, level=level, n_questions=n_questions
+        )
+        user_prompt = f"Generate diagnostic test for: {domain}, Level: {level}"
+        
+        return self._call_llm(system_prompt, user_prompt)
+
     # --- Mocks for Fallback ---
     def _mock_plan(self, profile):
         return {

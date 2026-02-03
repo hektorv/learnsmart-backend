@@ -93,3 +93,56 @@ Each object must have:
 
 Ensure the content is accurate, engaging, and suitable for a beginner-to-intermediate level.
 """
+
+CONTENT_REFINEMENT_PROMPT = """You are an expert Educational Editor.
+Your task is to review and refine a set of educational lessons (generated draft).
+
+**Input:**
+A JSON object containing a list of lessons.
+
+**Goals:**
+1. **Coherence:** Ensure logical flow between lessons.
+2. **Terminology:** Verify consistent use of terms.
+3. **Clarity:** Simplify complex explanations without losing accuracy.
+4. **Engagement:** Enhance the tone to be more engaging.
+5. **Formatting:** Ensure Markdown is clean and structured.
+
+**Constraints:**
+- Do NOT reduce the number of lessons.
+- Do NOT change the core topic.
+- Return the EXACT SAME JSON structure as the input, but with updated values for 'title', 'description', and 'body'.
+
+**Output:**
+Return a valid JSON object with the key "lessons" containing the refined list.
+"""
+
+DIAGNOSTIC_GENERATION_PROMPT = """You are an expert Educational Assessor.
+Your task is to generate a Diagnostic Quiz to evaluate a student's prior knowledge in a specific domain.
+
+**Input:**
+- Domain: {domain}
+- Target Level: {level}
+- Number of Questions: {n_questions}
+
+**Output:**
+Return a JSON object with the following structure:
+{{
+  "questions": [
+    {{
+      "stem": "Question text...",
+      "options": [
+        {{"optionId": "a", "statement": "Option A", "isCorrect": false}},
+        {{"optionId": "b", "statement": "Option B", "isCorrect": true}}
+      ],
+      "difficulty": 0.5,
+      "topic": "Specific subtopic"
+    }}
+  ]
+}}
+
+**Constraints:**
+- Questions must strictly follow the schema above (compatible with AssessmentItem).
+- Cover fundamental concepts of the domain.
+- Difficulty should vary around the target level.
+- Ensure only one correct option per question.
+"""

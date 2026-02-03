@@ -32,5 +32,9 @@ public interface Clients {
     public interface AiClient {
         @PostMapping("/plans")
         ExternalDtos.GeneratePlanResponse generatePlan(@RequestBody ExternalDtos.GeneratePlanRequest request);
+
+        @PostMapping("/assessments/diagnostic-test")
+        ExternalDtos.GenerateDiagnosticTestResponse generateDiagnosticTest(
+                @RequestBody ExternalDtos.GenerateDiagnosticTestRequest request);
     }
 }

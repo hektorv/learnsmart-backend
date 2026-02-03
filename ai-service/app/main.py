@@ -53,6 +53,14 @@ class FeedbackResponse(BaseModel):
     feedbackMessage: str
     remediationSuggestions: List[str] = []
 
+class GenerateDiagnosticTestRequest(BaseModel):
+    domain: str
+    level: str = "BEGINNER"
+    nQuestions: int = 5
+
+class GenerateDiagnosticTestResponse(BaseModel):
+    questions: List[Dict[str, Any]]
+
 # --- Endpoints ---
 
 @app.get("/health")
@@ -132,6 +140,7 @@ def next_item(request: NextItemRequest):
 def feedback(request: FeedbackRequest):
     try:
         item = request.item
+        # ... existing logic ...
         response = request.userResponse
         
         # Extract basic info safely
@@ -165,6 +174,29 @@ def feedback(request: FeedbackRequest):
             feedbackMessage=result.get("feedbackMessage", ""),
             remediationSuggestions=result.get("remediationSuggestions", [])
         )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class GenerateDiagnosticTestRequest(BaseModel):
+    domain: str
+    level: str = "BEGINNER"
+    nQuestions: int = 5
+
+class GenerateDiagnosticTestResponse(BaseModel):
+    questions: List[Dict[str, Any]]
+
+@app.post("/v1/assessments/diagnostic-test", response_model=GenerateDiagnosticTestResponse)
+def generate_diagnostic_test(request: GenerateDiagnosticTestRequest):
+    try:
+        val_domain = InputValidator.validate_text(request.domain)
+        result = llm_service.generate_diagnostic_test(
+            domain=val_domain,
+            level=request.level,
+            n_questions=request.nQuestions
+        )
+        return GenerateDiagnosticTestResponse(questions=result.get("questions", []))
     except HTTPException as e:
         raise e
     except Exception as e:

@@ -20,6 +20,7 @@ public class AssessmentSessionServiceImpl implements AssessmentSessionService {
     private final AssessmentItemRepository itemRepository;
     private final UserItemResponseRepository responseRepository;
     private final UserSkillMasteryRepository masteryRepository;
+    private final com.learnsmart.assessment.client.PlanningClient planningClient;
 
     @Override
     @Transactional
@@ -42,6 +43,16 @@ public class AssessmentSessionServiceImpl implements AssessmentSessionService {
         session.setStatus(status);
         if ("completed".equals(status)) {
             session.setCompletedAt(OffsetDateTime.now());
+            // Adaptivity Loop: Notify Planning Service
+            if (session.getPlanId() != null) {
+                try {
+                    planningClient.replan(session.getPlanId(), "Assessment Completed",
+                            "{\"score\": \"calculated_score_placeholder\"}");
+                } catch (Exception e) {
+                    System.err.println("Failed to notify Planning Service: " + e.getMessage());
+                    // Non-blocking for MVP
+                }
+            }
         }
         return sessionRepository.save(session);
     }

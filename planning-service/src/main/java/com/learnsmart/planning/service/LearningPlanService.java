@@ -18,4 +18,10 @@ public interface LearningPlanService {
 
     // Replan logic will be separate or here? Let's keep it here for now.
     LearningPlan replan(UUID id, String reason, String constraints);
+
+    List<java.util.Map<String, Object>> generateDiagnosticTest(String domain, String level, int nQuestions);
+
+    List<com.learnsmart.planning.model.Certificate> getCertificates(UUID userId);
+
+    void checkCompletion(UUID planId);
 }

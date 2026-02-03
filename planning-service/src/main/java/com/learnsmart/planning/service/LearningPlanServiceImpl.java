@@ -24,6 +24,7 @@ public class LearningPlanServiceImpl implements LearningPlanService {
 
     private final LearningPlanRepository planRepository;
     private final PlanReplanHistoryRepository replanRepository;
+    private final CertificateRepository certificateRepository;
     private final Clients.ProfileClient profileClient;
     private final Clients.ContentClient contentClient;
     private final Clients.AiClient aiClient;
@@ -32,6 +33,7 @@ public class LearningPlanServiceImpl implements LearningPlanService {
     @Override
     @Transactional
     public LearningPlan createPlan(LearningPlan plan) {
+
         // Only generate AI plan if modules are empty
         if (plan.getModules() == null || plan.getModules().isEmpty()) {
             try {
@@ -53,13 +55,11 @@ public class LearningPlanServiceImpl implements LearningPlanService {
                         });
                 aiRequest.setProfile(profileMap);
 
-                // Goals (Mocking single goal from Plan ID/Goal ID if available, otherwise
-                // generic)
-                // Ideally we fetch specific Goal details. For now, we wrap basic info.
+                // Goals
                 aiRequest.setGoals(List.of(Map.of(
                         "goalId", plan.getGoalId() != null ? plan.getGoalId() : "general-learning",
                         "title", "Custom Plan",
-                        "domain", "backend" // Heuristic default or fetch from GoalService
+                        "domain", "backend" // Heuristic default
                 )));
 
                 // Convert Content Catalog to Map List
@@ -84,7 +84,7 @@ public class LearningPlanServiceImpl implements LearningPlanService {
                         module.setPosition(modIdx++);
                         module.setTitle(modDraft.getTitle());
                         module.setDescription(modDraft.getDescription());
-                        module.setEstimatedHours(new BigDecimal("1.0")); // Default or parsing dependent
+                        module.setEstimatedHours(new BigDecimal("1.0")); // Default
 
                         List<PlanActivity> activities = new ArrayList<>();
                         int actIdx = 1;
@@ -112,9 +112,20 @@ public class LearningPlanServiceImpl implements LearningPlanService {
                 // Fallback or Log Error
                 System.err.println("Error generating AI Plan: " + e.getMessage());
                 e.printStackTrace();
-                // We let it save empty plan rather than hard crashing, or we could re-throw.
-                // For this validation task, better to see the error in logs but save
-                // "something".
+            }
+        } else {
+            // If modules are provided manually, verify links
+            int manualIdx = 1;
+            for (PlanModule m : plan.getModules()) {
+                m.setPlan(plan);
+                if (m.getPosition() == null) {
+                    m.setPosition(manualIdx++);
+                }
+                if (m.getActivities() != null) {
+                    for (PlanActivity a : m.getActivities()) {
+                        a.setModule(m);
+                    }
+                }
             }
         }
         return planRepository.save(plan);
@@ -172,8 +183,47 @@ public class LearningPlanServiceImpl implements LearningPlanService {
 
         // Update plan logic (Mock)
         existing.setRawPlanAi(history.getResponsePayload());
-        // In real world, we would parse response and update modules/activities.
 
         return planRepository.save(existing);
+    }
+
+    @Override
+    public List<Map<String, Object>> generateDiagnosticTest(String domain, String level, int nQuestions) {
+        ExternalDtos.GenerateDiagnosticTestRequest request = ExternalDtos.GenerateDiagnosticTestRequest.builder()
+                .domain(domain)
+                .level(level)
+                .nQuestions(nQuestions)
+                .build();
+        ExternalDtos.GenerateDiagnosticTestResponse response = aiClient.generateDiagnosticTest(request);
+        return response.getQuestions();
+    }
+
+    @Override
+    public List<Certificate> getCertificates(UUID userId) {
+        return certificateRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional
+    public void checkCompletion(UUID planId) {
+        if (certificateRepository.existsByPlanId(planId))
+            return;
+
+        LearningPlan plan = findById(planId);
+        boolean allModulesCompleted = plan.getModules().stream()
+                .allMatch(m -> "completed".equalsIgnoreCase(m.getStatus()));
+
+        if (allModulesCompleted) {
+            Certificate cert = new Certificate();
+            cert.setUserId(UUID.fromString(plan.getUserId()));
+            cert.setPlanId(plan.getId());
+            cert.setTitle(
+                    "Certificate of Completion: " + (plan.getGoalId() != null ? plan.getGoalId() : "Learning Plan"));
+            cert.setDescription("Awarded for successfully completing the learning plan.");
+            certificateRepository.save(cert);
+
+            plan.setStatus("completed");
+            planRepository.save(plan);
+        }
     }
 }

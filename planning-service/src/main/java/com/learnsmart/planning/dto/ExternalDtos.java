@@ -74,4 +74,24 @@ public class ExternalDtos {
         private String type; // lesson, practice
         private String contentRef; // ID from catalog
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GenerateDiagnosticTestRequest {
+        @Builder.Default
+        private String domain = "general";
+        @Builder.Default
+        private String level = "BEGINNER";
+        @Builder.Default
+        private int nQuestions = 5;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GenerateDiagnosticTestResponse {
+        private List<Map<String, Object>> questions;
+    }
 }

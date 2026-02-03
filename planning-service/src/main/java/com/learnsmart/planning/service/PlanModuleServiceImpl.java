@@ -13,6 +13,7 @@ import java.util.List;
 public class PlanModuleServiceImpl implements PlanModuleService {
 
     private final PlanModuleRepository moduleRepository;
+    private final LearningPlanService planService;
 
     @Override
     public List<PlanModule> getModulesByPlan(UUID planId) {
@@ -27,7 +28,12 @@ public class PlanModuleServiceImpl implements PlanModuleService {
             throw new RuntimeException("Module does not belong to plan");
         }
         module.setStatus(status);
-        return moduleRepository.save(module);
+        PlanModule saved = moduleRepository.save(module);
+
+        // Trigger completion check
+        planService.checkCompletion(planId);
+
+        return saved;
     }
 
     @Override

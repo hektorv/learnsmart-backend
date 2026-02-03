@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS plan_replans_history;
 DROP TABLE IF EXISTS plan_activities;
 DROP TABLE IF EXISTS plan_modules;
+DROP TABLE IF EXISTS certificates;
 DROP TABLE IF EXISTS learning_plans;
 
 CREATE TABLE IF NOT EXISTS learning_plans (
@@ -52,4 +53,13 @@ CREATE TABLE IF NOT EXISTS plan_replans_history (
     request_payload TEXT,
     response_payload TEXT,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS certificates (
+    id              UUID PRIMARY KEY,
+    user_id         UUID NOT NULL,
+    plan_id         UUID NOT NULL UNIQUE REFERENCES learning_plans(id) ON DELETE CASCADE,
+    title           VARCHAR(200) NOT NULL,
+    description     TEXT,
+    issued_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );

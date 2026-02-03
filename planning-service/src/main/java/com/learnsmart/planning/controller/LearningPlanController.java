@@ -9,12 +9,25 @@ import lombok.RequiredArgsConstructor;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 
+import com.learnsmart.planning.dto.ExternalDtos;
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/plans")
 @RequiredArgsConstructor
 public class LearningPlanController {
 
     private final LearningPlanService planService;
+
+    @PostMapping("/run-diagnostic")
+    public ResponseEntity<ExternalDtos.GenerateDiagnosticTestResponse> generateDiagnosticTest(
+            @RequestBody ExternalDtos.GenerateDiagnosticTestRequest request) {
+        List<Map<String, Object>> questions = planService.generateDiagnosticTest(
+                request.getDomain(), request.getLevel(), request.getNQuestions());
+
+        return new ResponseEntity<>(new ExternalDtos.GenerateDiagnosticTestResponse(questions), HttpStatus.OK);
+    }
 
     @PostMapping
     public ResponseEntity<LearningPlan> createPlan(@RequestBody LearningPlan plan) {
@@ -47,5 +60,11 @@ public class LearningPlanController {
     public ResponseEntity<LearningPlan> replan(@PathVariable UUID id, @RequestParam String reason,
             @RequestBody(required = false) String constraints) {
         return new ResponseEntity<>(planService.replan(id, reason, constraints), HttpStatus.OK);
+    }
+
+    @GetMapping("/certificates")
+    public ResponseEntity<List<com.learnsmart.planning.model.Certificate>> getCertificates(
+            @RequestParam String userId) {
+        return new ResponseEntity<>(planService.getCertificates(UUID.fromString(userId)), HttpStatus.OK);
     }
 }
