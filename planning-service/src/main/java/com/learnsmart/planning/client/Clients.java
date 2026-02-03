@@ -33,7 +33,7 @@ public interface Clients {
         @PostMapping("/plans")
         ExternalDtos.GeneratePlanResponse generatePlan(@RequestBody ExternalDtos.GeneratePlanRequest request);
 
-        @PostMapping("/assessments/diagnostic-test")
+        @PostMapping("/assessments/diagnostic-tests")
         ExternalDtos.GenerateDiagnosticTestResponse generateDiagnosticTest(
                 @RequestBody ExternalDtos.GenerateDiagnosticTestRequest request);
     }

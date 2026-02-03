@@ -20,7 +20,7 @@ public class LearningPlanController {
 
     private final LearningPlanService planService;
 
-    @PostMapping("/run-diagnostic")
+    @PostMapping("/diagnostics")
     public ResponseEntity<ExternalDtos.GenerateDiagnosticTestResponse> generateDiagnosticTest(
             @RequestBody ExternalDtos.GenerateDiagnosticTestRequest request) {
         List<Map<String, Object>> questions = planService.generateDiagnosticTest(

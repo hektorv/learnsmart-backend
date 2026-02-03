@@ -187,7 +187,7 @@ class GenerateDiagnosticTestRequest(BaseModel):
 class GenerateDiagnosticTestResponse(BaseModel):
     questions: List[Dict[str, Any]]
 
-@app.post("/v1/assessments/diagnostic-test", response_model=GenerateDiagnosticTestResponse)
+@app.post("/v1/assessments/diagnostic-tests", response_model=GenerateDiagnosticTestResponse)
 def generate_diagnostic_test(request: GenerateDiagnosticTestRequest):
     try:
         val_domain = InputValidator.validate_text(request.domain)

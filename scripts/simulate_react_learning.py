@@ -163,7 +163,7 @@ def run_simulation():
     # STEP 4: Diagnostic Test (Sprint 5.1)
     # ==========================================
     print("\n--- 4. DIAGNOSTIC TEST (Sprint 5.1) ---")
-    diagnostic = student.post("/planning/plans/run-diagnostic", {
+    diagnostic = student.post("/planning/plans/diagnostics", {
         "domain": "react-dev",
         "level": "JUNIOR",
         "nQuestions": 1
@@ -205,6 +205,14 @@ def run_simulation():
     for m in modules:
         print(f"  > Completing module: {m['title']}...")
         student.patch(f"/planning/plans/{plan_id}/modules/{m['id']}", {"status": "completed"})
+        
+        # Track simulated learning (30 mins per module)
+        student.post("/tracking/events", {
+            "userId": student.user_id,
+            "eventType": "content_view", 
+            "entityId": m.get('contentId') or m['id'],
+            "payload": json.dumps({"durationSeconds": 1800})
+        })
 
     # Record Activity
     student.post("/tracking/events", {
