@@ -26,4 +26,7 @@ public class Domain {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(nullable = false, length = 20)
+    private String status = "published"; // draft, published, archived
 }

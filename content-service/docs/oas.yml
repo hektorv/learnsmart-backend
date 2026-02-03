@@ -29,6 +29,13 @@ paths:
             type: string
           description: Filtro por código exacto del dominio
         - in: query
+          name: status
+          schema:
+            type: string
+            enum: [published, draft, archived]
+            default: published
+          description: Filtro por estado (default published)
+        - in: query
           name: page
           schema:
             type: integer
@@ -551,6 +558,9 @@ components:
           type: string
         description:
           type: string
+        status:
+          type: string
+          enum: [published, draft, archived]
       required: [id, code, name]
 
     DomainInput:
@@ -562,6 +572,9 @@ components:
           type: string
         description:
           type: string
+        status:
+          type: string
+          enum: [published, draft, archived]
       required: [code, name]
 
     Skill:

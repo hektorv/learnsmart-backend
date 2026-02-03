@@ -24,6 +24,17 @@ CREATE TABLE user_goals (
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE user_study_preferences (
+    user_id                 UUID PRIMARY KEY,
+    hours_per_week          FLOAT,
+    preferred_days          TEXT[], -- Array of strings
+    preferred_session_min   INT,
+    content_format_priority JSONB,
+    notifications_enabled   BOOLEAN DEFAULT true,
+    raw_preferences         JSONB,
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- opcional, si quieres FK directa al perfil
 -- ALTER TABLE user_goals
 --   ADD CONSTRAINT fk_user_goals_user

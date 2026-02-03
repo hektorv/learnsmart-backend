@@ -35,14 +35,7 @@ class TrackingServiceTest {
         LearningEvent event = new LearningEvent();
         event.setEventType("content_view");
 
-        when(repository.save(any(LearningEvent.class))).thenAnswer(i -> {
-            LearningEvent e = i.getArgument(0);
-            e.setId(UUID.randomUUID());
-            return e;
-        });
-
-        LearningEvent result = trackingService.createEvent(event);
-        assertNotNull(result.getId());
+        trackingService.createEvent(event);
         verify(repository).save(event);
     }
 

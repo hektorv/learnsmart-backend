@@ -173,18 +173,81 @@ public class LearningPlanServiceImpl implements LearningPlanService {
     public LearningPlan replan(UUID id, String reason, String constraints) {
         LearningPlan existing = findById(id);
 
-        // Log history
-        PlanReplanHistory history = new PlanReplanHistory();
-        history.setPlan(existing);
-        history.setReason(reason);
-        history.setRequestPayload(constraints);
-        history.setResponsePayload("{\"mock\": \"replanned\"}"); // Mock AI response
-        replanRepository.save(history);
+        try {
+            // 1. Prepare Request
+            // Convert existing plan to Map (DTO logic simplified for MVP)
+            Map<String, Object> currentPlanMap = objectMapper.convertValue(existing,
+                    new TypeReference<Map<String, Object>>() {
+                    });
 
-        // Update plan logic (Mock)
-        existing.setRawPlanAi(history.getResponsePayload());
+            // Note: For full implementation, we should fetch recent events from Tracking
+            // Service
+            // and skill state from Assessment Service. For US-080 MVP, passing explicit
+            // constraints if any.
 
-        return planRepository.save(existing);
+            ExternalDtos.ReplanRequest request = ExternalDtos.ReplanRequest.builder()
+                    .userId(existing.getUserId())
+                    .currentPlan(currentPlanMap)
+                    .recentEvents(new ArrayList<>()) // Placeholder: Connect to Tracking Service in future
+                    .updatedSkillState(new ArrayList<>()) // Placeholder
+                    .build();
+
+            // 2. Call AI Service
+            ExternalDtos.ReplanResponse response = aiClient.replan(request);
+
+            // 3. Apply Changes
+            if (response != null && response.getPlan() != null) {
+                // Completely replace modules with the new optimized path
+                List<PlanModule> newModules = new ArrayList<>();
+                int modIdx = 1;
+
+                for (ExternalDtos.ModuleDraft modDraft : response.getPlan().getModules()) {
+                    PlanModule module = new PlanModule();
+                    module.setPlan(existing);
+                    module.setPosition(modIdx++);
+                    module.setTitle(modDraft.getTitle());
+                    module.setDescription(modDraft.getDescription());
+                    module.setEstimatedHours(new BigDecimal("1.0")); // Default or parse from draft
+
+                    List<PlanActivity> activities = new ArrayList<>();
+                    int actIdx = 1;
+                    if (modDraft.getActivities() != null) {
+                        for (ExternalDtos.ActivityDraft actDraft : modDraft.getActivities()) {
+                            PlanActivity activity = new PlanActivity();
+                            activity.setModule(module);
+                            activity.setPosition(actIdx++);
+                            activity.setActivityType(actDraft.getType());
+                            String ref = actDraft.getContentRef();
+                            if (ref == null || ref.isBlank()) {
+                                ref = "sys:" + UUID.randomUUID().toString().substring(0, 8);
+                            }
+                            activity.setContentRef(ref);
+                            activity.setEstimatedMinutes(20);
+                            activities.add(activity);
+                        }
+                    }
+                    module.setActivities(activities);
+                    newModules.add(module);
+                }
+
+                existing.getModules().clear();
+                existing.getModules().addAll(newModules);
+                existing.setRawPlanAi(objectMapper.writeValueAsString(response));
+            }
+
+            // 4. Log History
+            PlanReplanHistory history = new PlanReplanHistory();
+            history.setPlan(existing);
+            history.setReason(reason);
+            history.setRequestPayload(constraints != null ? constraints : "Replan triggered");
+            history.setResponsePayload(response != null ? response.getChangeSummary() : "No AI response");
+            replanRepository.save(history);
+
+            return planRepository.save(existing);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Replan failed: " + e.getMessage(), e);
+        }
     }
 
     @Override

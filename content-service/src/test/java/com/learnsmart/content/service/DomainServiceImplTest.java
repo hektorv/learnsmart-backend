@@ -33,7 +33,7 @@ class DomainServiceImplTest {
         domain.setCode(code);
         when(domainRepository.findByCode(code)).thenReturn(Optional.of(domain));
 
-        List<Domain> result = domainService.findAll(code, 0, 10);
+        List<Domain> result = domainService.findAll(code, null, 0, 10);
         assertEquals(1, result.size());
         assertEquals(code, result.get(0).getCode());
     }
@@ -43,14 +43,14 @@ class DomainServiceImplTest {
         String code = "MATH";
         when(domainRepository.findByCode(code)).thenReturn(Optional.empty());
 
-        List<Domain> result = domainService.findAll(code, 0, 10);
+        List<Domain> result = domainService.findAll(code, null, 0, 10);
         assertTrue(result.isEmpty());
     }
 
     @Test
     void testFindAll_NoFilter() {
         when(domainRepository.findAll()).thenReturn(Collections.emptyList());
-        List<Domain> result = domainService.findAll(null, 0, 10);
+        List<Domain> result = domainService.findAll(null, null, 0, 10);
         assertNotNull(result);
         verify(domainRepository).findAll();
     }

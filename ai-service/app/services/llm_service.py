@@ -11,10 +11,21 @@ class LLMService:
         self.model = settings.OPENAI_MODEL
         self.client = None
         
-        if self.api_key:
+        # Priority 1: Explicit Mock Mode
+        if settings.USE_MOCK_AI:
+             print("INFO: USE_MOCK_AI=true. Running in MOCK mode.")
+             self.client = None
+        # Priority 2: Real Client if Key exists
+        elif self.api_key:
             self.client = OpenAI(api_key=self.api_key)
+        # Priority 3: Test Environment Fallback (Implicit Mock)
+        elif settings.ENVIRONMENT == "test":
+            print("INFO: Test Environment detected. Running in MOCK mode.")
+            self.client = None
         else:
-            print("WARNING: OPENAI_API_KEY not found. Running in MOCK mode.")
+            # Should be unreachable due to config.py validation, but safe default
+            print("WARNING: Unexpected state. Defaulting to MOCK mode.")
+            self.client = None
 
     def _call_llm(self, system_prompt: str, user_prompt: str, response_format: str = "json_object") -> Dict[str, Any]:
         """

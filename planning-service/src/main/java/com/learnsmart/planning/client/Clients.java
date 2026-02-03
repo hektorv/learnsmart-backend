@@ -36,5 +36,8 @@ public interface Clients {
         @PostMapping("/assessments/diagnostic-tests")
         ExternalDtos.GenerateDiagnosticTestResponse generateDiagnosticTest(
                 @RequestBody ExternalDtos.GenerateDiagnosticTestRequest request);
+
+        @PostMapping("/plans/adjustments")
+        ExternalDtos.ReplanResponse replan(@RequestBody ExternalDtos.ReplanRequest request);
     }
 }

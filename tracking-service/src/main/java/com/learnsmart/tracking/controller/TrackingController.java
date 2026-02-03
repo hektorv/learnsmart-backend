@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.net.URI;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -19,9 +19,9 @@ public class TrackingController {
     private final TrackingService service;
 
     @PostMapping
-    public ResponseEntity<LearningEvent> createEvent(@RequestBody LearningEvent event) {
-        LearningEvent created = service.createEvent(event);
-        return ResponseEntity.created(URI.create("/events/" + created.getId())).body(created);
+    public ResponseEntity<Void> createEvent(@RequestBody LearningEvent event) {
+        service.createEvent(event);
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping

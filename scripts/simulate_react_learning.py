@@ -223,6 +223,55 @@ def run_simulation():
     })
 
 
+
+    # ==========================================
+    # STEP 6b: Adaptive Assessment (US-083 & US-084)
+    # ==========================================
+    print("\n--- 6b. ADAPTIVE ASSESSMENT SIMULATION ---")
+    # 1. Create Session
+    session = student.post("/assessment/assessments/sessions", {
+        "userId": student.user_id,
+        "planId": plan_id,
+        "type": "ADAPTIVE"
+    })
+    
+    if session and 'id' in session:
+        session_id = session['id']
+        print(f"  > Session Created: {session_id}")
+
+        # 2. Get Next Item (US-083 AI)
+        print(f"  > Requesting Next Item (AI)...")
+        item = student.get(f"/assessment/assessments/sessions/{session_id}/next-item")
+        if item:
+            item_id = item.get('id') or item.get('tempId')
+            print(f"    - Received Item: {item.get('stem', 'No Stem')}")
+            
+            if item_id:
+                # 3. Submit Response (US-084 AI Feedback)
+                # We need a valid option ID to avoid "Option not found" error
+                options = item.get('options', [])
+                option_id = options[0]['id'] if options else None
+                
+                if option_id:
+                    print(f"  > Submitting response (Option {option_id}) to trigger AI Feedback...")
+                    response = student.post(f"/assessment/assessments/sessions/{session_id}/responses", {
+                        "assessmentItemId": item_id,
+                        "selectedOptionId": option_id,
+                        "responsePayload": "I choose this",
+                        "responseTimeMs": 5000
+                    })
+                    
+                    if response:
+                         print(f"    - Feedback: {response.get('feedback')}")
+                         print(f"    - Correct: {response.get('isCorrect')}")
+                else:
+                    print("    - No options found in item, skipping response submission test.")
+
+        # 4. Complete Session
+        student.put(f"/assessment/assessments/sessions/{session_id}/status?status=completed", {})
+    else:
+        print("  ❌ Failed to create assessment session or invalid response.")
+
     # ==========================================
     # STEP 7: Certification (Sprint 5.3)
     # ==========================================

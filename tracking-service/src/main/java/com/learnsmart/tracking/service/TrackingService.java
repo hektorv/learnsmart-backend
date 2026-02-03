@@ -17,9 +17,10 @@ public class TrackingService {
 
     private final LearningEventRepository repository;
 
+    @org.springframework.scheduling.annotation.Async
     @Transactional
-    public LearningEvent createEvent(LearningEvent event) {
-        return repository.save(event);
+    public void createEvent(LearningEvent event) {
+        repository.save(event);
     }
 
     public Page<LearningEvent> listEvents(UUID userId, String eventType, String entityType, UUID entityId,

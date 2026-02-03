@@ -19,9 +19,12 @@ public class DomainController {
 
     @GetMapping
     public List<Domain> getDomains(@RequestParam(required = false) String code,
+            @RequestParam(required = false, defaultValue = "published") String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return domainService.findAll(code, page, size);
+        // If status is "all", we pass null to service to get all
+        String filterStatus = "all".equalsIgnoreCase(status) ? null : status;
+        return domainService.findAll(code, filterStatus, page, size);
     }
 
     @PostMapping

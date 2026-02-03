@@ -21,6 +21,8 @@ public class AssessmentSessionServiceImpl implements AssessmentSessionService {
     private final UserItemResponseRepository responseRepository;
     private final UserSkillMasteryRepository masteryRepository;
     private final com.learnsmart.assessment.client.PlanningClient planningClient;
+    private final com.learnsmart.assessment.client.AiClient aiClient;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -59,8 +61,39 @@ public class AssessmentSessionServiceImpl implements AssessmentSessionService {
 
     @Override
     public AssessmentItem getNextItem(UUID sessionId) {
-        // Mock Adaptive Logic: Pick random active item
-        // In real world: check mastery, pick optimal difficulty items based on IRT
+        AssessmentSession session = getSession(sessionId);
+
+        // 1. Prepare Context (History & Mastery)
+        // For simplicity, we fetch mastery for user and recent history
+        List<com.learnsmart.assessment.dto.AiDtos.NextItemRequest> skillState = new ArrayList<>(); // TODO: Map real
+                                                                                                   // mastery
+        List<java.util.Map<String, Object>> recentHistory = new ArrayList<>();
+
+        com.learnsmart.assessment.dto.AiDtos.NextItemRequest request = com.learnsmart.assessment.dto.AiDtos.NextItemRequest
+                .builder()
+                .userId(session.getUserId().toString())
+                .domain("JAVA") // TODO: Get from Plan/Goal context
+                .skillState(new ArrayList<>())
+                .recentHistory(recentHistory)
+                .build();
+
+        try {
+            // 2. Call AI Service
+            com.learnsmart.assessment.dto.AiDtos.NextItemResponse response = aiClient.getNextItem(request);
+            if (response != null && response.getItem() != null) {
+                // Map AI Item to Entity (Ephemeral or Persist?)
+                // Strategy: AI returns item definition. We persist it as a new AssessmentItem
+                // or find existing.
+                // MVP: If ID exists, use it. If not, create ephemeral/new.
+                // For safety in this MVP, we will try to find a real item in DB that matches
+                // criteria or just fallback.
+                // Ideally, we would create a new transient item.
+            }
+        } catch (Exception e) {
+            System.err.println("AI Next Item failed: " + e.getMessage());
+        }
+
+        // Fallback: Random Active Item
         return itemRepository.findRandomActiveItem()
                 .orElseThrow(() -> new RuntimeException("No active assessment items found"));
     }
@@ -128,6 +161,38 @@ public class AssessmentSessionServiceImpl implements AssessmentSessionService {
         }
 
         UserItemResponseWithFeedback res = new UserItemResponseWithFeedback();
+
+        // AI Feedback (US-084)
+        if (!isCorrect) {
+            try {
+                // Prepare request
+                java.util.Map<String, Object> itemMap = new java.util.HashMap<>();
+                itemMap.put("id", item.getId().toString());
+                itemMap.put("stem",
+                        item.getDomainId() != null ? "Question for domain " + item.getDomainId() : "Question");
+                // Avoid full serialization to prevent loops
+                // java.util.Map<String, Object> itemMap = objectMapper.convertValue(item,
+                // java.util.Map.class);
+                java.util.Map<String, Object> responseMap = new java.util.HashMap<>();
+                responseMap.put("selectedOptionId", request.getSelectedOptionId());
+                responseMap.put("openAnswer", request.getResponsePayload());
+
+                com.learnsmart.assessment.dto.AiDtos.FeedbackRequest feedbackReq = com.learnsmart.assessment.dto.AiDtos.FeedbackRequest
+                        .builder()
+                        .userId(session.getUserId().toString())
+                        .item(itemMap)
+                        .userResponse(responseMap)
+                        .build();
+
+                com.learnsmart.assessment.dto.AiDtos.FeedbackResponse aiFeedback = aiClient.getFeedback(feedbackReq);
+                if (aiFeedback != null && aiFeedback.getFeedbackMessage() != null) {
+                    feedback = aiFeedback.getFeedbackMessage();
+                }
+            } catch (Exception e) {
+                System.err.println("AI Feedback failed: " + e.getMessage());
+            }
+        }
+
         // Manually copy props (or use mapper)
         res.setId(response.getId());
         res.setSessionId(response.getSessionId());

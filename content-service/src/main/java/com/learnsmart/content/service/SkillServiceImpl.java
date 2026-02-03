@@ -68,9 +68,39 @@ public class SkillServiceImpl implements SkillService {
     @Override
     @Transactional
     public void updatePrerequisites(UUID id, List<UUID> prerequisiteIds) {
-        Skill skill = skillRepository.findById(id).orElseThrow(() -> new RuntimeException("Skill not found"));
-        List<Skill> prereqs = skillRepository.findAllById(prerequisiteIds);
-        skill.setPrerequisites(new HashSet<>(prereqs));
+        Skill skill = skillRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Skill not found: " + id));
+
+        // 1. Validate Self-Reference
+        if (prerequisiteIds.contains(id)) {
+            throw new IllegalArgumentException("Skill cannot depend on itself");
+        }
+
+        // 2. Fetch Prerequisite Entities
+        List<Skill> newPrereqs = skillRepository.findAllById(prerequisiteIds);
+        if (newPrereqs.size() != prerequisiteIds.size()) {
+            throw new IllegalArgumentException("One or more prerequisite IDs not found");
+        }
+
+        // 3. Cycle Detection
+        for (Skill prereq : newPrereqs) {
+            checkCycle(prereq, id, new HashSet<>());
+        }
+
+        skill.setPrerequisites(new HashSet<>(newPrereqs));
         skillRepository.save(skill);
+    }
+
+    private void checkCycle(Skill current, UUID targetId, Set<UUID> visited) {
+        if (current.getId().equals(targetId)) {
+            throw new IllegalArgumentException("Circular dependency detected involving skill: " + current.getName());
+        }
+        if (!visited.add(current.getId())) {
+            return;
+        }
+        for (Skill dependency : current.getPrerequisites()) {
+            // Ensure dependencies are loaded (transactional session needed)
+            checkCycle(dependency, targetId, visited);
+        }
     }
 }

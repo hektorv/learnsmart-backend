@@ -32,11 +32,11 @@ class DomainControllerTest {
     @Test
     void testGetDomains() {
         String code = "MATH";
-        when(domainService.findAll(eq(code), anyInt(), anyInt())).thenReturn(Collections.emptyList());
+        when(domainService.findAll(eq(code), any(), anyInt(), anyInt())).thenReturn(Collections.emptyList());
 
-        List<Domain> result = controller.getDomains(code, 0, 10);
+        List<Domain> result = controller.getDomains(code, "published", 0, 10);
         assertTrue(result.isEmpty());
-        verify(domainService).findAll(eq(code), eq(0), eq(10));
+        verify(domainService).findAll(eq(code), eq("published"), eq(0), eq(10));
     }
 
     @Test

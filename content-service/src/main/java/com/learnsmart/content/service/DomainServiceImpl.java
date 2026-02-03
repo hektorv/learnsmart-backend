@@ -16,16 +16,23 @@ public class DomainServiceImpl implements DomainService {
     private final DomainRepository domainRepository;
 
     @Override
-    public List<Domain> findAll(String code, Integer page, Integer size) {
-        // TFM Simplification: Pagination ignored in memory for MVP if repo doesn't
-        // support complex specs yet,
-        // or just returning all. Given requirements, let's return all or filter by
-        // code.
-        // Proper implementation would use Pageable.
+    public List<Domain> findAll(String code, String status, Integer page, Integer size) {
         if (code != null) {
             Optional<Domain> d = domainRepository.findByCode(code);
             return d.map(List::of).orElse(List.of());
         }
+        if (status != null) {
+            return domainRepository.findByStatus(status);
+        }
+        // US-088: Default filter? Or return all?
+        // If status is null, usually return all (Admin behavior) or default to
+        // published (User behavior).
+        // Let's assume the Controller handles the default, or we default here.
+        // Given "Update findAll to filter by status by default", let's default to
+        // 'published' if null?
+        // But that breaks "List all for admin".
+        // Let's modify Controller to pass "published" by default if user is
+        // unprivileged, or just support the param.
         return domainRepository.findAll();
     }
 

@@ -94,4 +94,23 @@ public class ExternalDtos {
     public static class GenerateDiagnosticTestResponse {
         private List<Map<String, Object>> questions;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReplanRequest {
+        private String userId;
+        private Map<String, Object> currentPlan;
+        private List<Map<String, Object>> recentEvents;
+        private List<Map<String, Object>> updatedSkillState;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReplanResponse {
+        private PlanDraft plan;
+        private String changeSummary;
+    }
 }

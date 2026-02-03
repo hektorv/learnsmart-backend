@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.Optional;
 
 public interface DomainService {
-    List<Domain> findAll(String code, Integer page, Integer size);
+    List<Domain> findAll(String code, String status, Integer page, Integer size);
 
     Optional<Domain> findById(UUID id);
 

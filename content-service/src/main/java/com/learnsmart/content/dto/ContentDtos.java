@@ -65,4 +65,14 @@ public class ContentDtos {
         private UUID skillId;
         private Double weight;
     }
+
+    @Data
+    public static class SkillDto {
+        private UUID id;
+        private String code;
+        private String name;
+        private String description;
+        private String level;
+        private List<String> tags;
+    }
 }

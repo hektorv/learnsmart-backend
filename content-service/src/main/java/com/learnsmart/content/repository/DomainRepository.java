@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface DomainRepository extends JpaRepository<Domain, UUID> {
     Optional<Domain> findByCode(String code);
+
+    java.util.List<Domain> findByStatus(String status);
 }

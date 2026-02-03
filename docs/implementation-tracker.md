@@ -62,6 +62,7 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 - [x] **API**:
   - `GET /domains` (Implemented)
   - `GET /content-items` (Implemented)
+  - [x] `GET/PUT /skills/{id}/prerequisites` (Epic 8) + Cycle Check (US-013).
 - [x] **Datos (Seed Data)**:
   - Dominios: `Backend`, `Frontend`.
   - Habilidades: `Java`, `Spring`, `React`, `Hooks`.
@@ -75,12 +76,14 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
   - Cliente Feign para `ai-service`.
 - [x] **API**:
   - `POST /plans`: Generación orquestada y persistencia verificada.
+  - `POST /plans`: Generación orquestada y persistencia verificada.
+  - [x] `POST /plans/{id}/replan` (Lógica real implementada US-080).
 
 ## 🎓 ÉPICA 4: Evaluación (`assessment-service`)
 - [x] **Estructura Base**: Spring Boot, JPA, Postgres.
 - [x] **API**:
   - `POST /assessments/session`: Crear sesión.
-  - `POST /assessments/session/{id}/next-item`: Obtener pregunta.
+  - `POST /assessments/session/{id}/next-item`: Implementado (Mock random). ⚠️ Falta IA (Epic 8).
   - `POST /assessments/session/{id}/response`: Evaluar respuesta.
 - [x] **Datos (Seed Data)**:
   - Preguntas cargadas para `Java Basics` y `React Basics`.
@@ -89,7 +92,7 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 ## 📊 ÉPICA 5: Tracking (`tracking-service`)
 - [x] **Estructura Base**: Spring Boot, JPA, Postgres.
 - [x] **API**:
-  - `POST /events`: Registro de eventos asíncrono.
+  - `POST /events`: Registro implementado (Asíncrono US-086).
   - `GET /events`: Consulta histórica.
 
 ## 🤖 ÉPICA 6: Inteligencia Artificial (`ai-service`)
@@ -97,10 +100,97 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 - [x] **Integración LLM**:
   - Configuración OpenAI API Key verificada.
   - Endpoints `/plans/generate` y `/assessments/next-item` funcionales.
+  - **Validado**: Lógica real (OpenAI) con fallback a Mock si no hay Key.
+  - **Seguridad**: Prompts incluyen instrucciones anti-injection.
+  - **Refinement**: Generación de lecciones incluye paso de auto-refinamiento.
 
 ## 🔒 Seguridad & Gateway
 - [x] **CORS**: Habilitado para `http://localhost:5173` (Frontend).
+- [x] **CORS**: Habilitado para `http://localhost:5173` (Frontend) en `application.yml`.
 - [x] **Auth Global**:
-  - Rutas Públicas: `/auth/**` (Sin redirección login).
-  - Rutas Privadas: `/**` (Token Relay a microservicios).
+  - Rutas Públicas: `/auth/**` permitidas en `SecurityConfig`.
+  - Rutas Privadas: `/**` autenticadas vía `oauth2ResourceServer`.
+  - Token Relief: Filtro `TokenRelay` activo en rutas de microservicios.
 
+---
+
+## 🛠 ÉPICA 8: Technical Refinement & Gap Closure
+*Epic creada post-validación inicial para abordar deuda técnica.*
+
+- [x] **US-080: Real AI Replanning**
+  - Reemplazar stub en `LearningPlanServiceImpl` con llamada real a AI Service.
+- [x] **US-081: Explicit Prerequisies API**
+  - Añadir endpoints específicos en `SkillController` para gestión de grafo.
+- [x] **US-082: OAS/DDL Consistency**
+  - Auditoría final de contratos vs código.
+- [x] **US-083: Adaptive Assessment (Real AI)**
+  - Implementar selección de items vía AI (`getNextItem`).
+- [x] **US-084: AI Feedback Generation**
+  - Integrar llamada a AI para feedback contextual (`submitResponse`).
+- [x] **US-085: Strict AI Configuration**
+  - Eliminar fallback automático a Mock; requerir flag explícito o API Key válida.
+- [x] **US-086: Async Event Tracking**
+  - Hacer `createEvent` asíncrono.
+- [x] **US-087: Skill Dependency Cycle Detection**
+  - Validar grafo DAG en updates.
+- [x] **US-088: Domain Status Filtering**
+  - Filtrar dominios no publicados.
+
+---
+
+## 🧩 ÉPICA 9: Gap Closure & Enhancements (New)
+*Gaps identificados durante la validación integral de Febrero 2026.*
+
+### Profile Service Gaps
+- [ ] **US-090**: Email Confirmation Workflow
+- [ ] **US-091**: Password Complexity Validation
+- [ ] **US-092**: Course Statistics
+- [ ] **US-093**: Skill Validation against Catalog
+- [ ] **US-094**: User Audit Trail
+- [ ] **US-095**: Physical Deletion of Goals
+- [ ] **US-096**: Goal Completion Tracking
+- [ ] **US-097**: Consistent HTTP Status Codes
+- [ ] **US-098**: Performance Optimization
+
+### Content Service Gaps
+- [ ] **US-099**: CONTENT_CREATOR Role
+- [ ] **US-0100**: Content Versioning
+- [ ] **US-0101**: Skill-based Content Filtering
+- [ ] **US-0102**: User Completion Tracking Integration
+- [ ] **US-0103**: Pedagogical Ordering
+- [ ] **US-0104**: Domain Enrichment (UI/UX)
+- [ ] **US-0105**: Difficulty-based Skill Filtering
+- [ ] **US-0106**: Proper HTTP 409 for Duplicates
+
+### Planning Service Gaps
+- [ ] **US-0107**: Automatic Replanning Triggers
+- [ ] **US-0108**: User Replan Approval Workflow
+- [ ] **US-0109**: Progress Calculation & Indicators
+- [ ] **US-0110**: Activity Completion Timestamps
+- [ ] **US-0111**: Skill Prerequisite Validation in Planning
+- [ ] **US-0112**: Diagnostic-based Level Detection
+
+### Assessment Service Gaps
+- [ ] **US-0113**: Session Management Enhancements
+- [ ] **US-0114**: IRT/CAT Algorithm Implementation
+- [ ] **US-0115**: Item Deduplication in Sessions
+- [ ] **US-0116**: Session Progress Indicators
+- [ ] **US-0117**: On-Demand Additional Feedback
+- [ ] **US-0118**: Mastery Trend Analysis
+- [ ] **US-0119**: Low Mastery Skill Highlighting
+- [ ] **US-0120**: Peer Comparison Analytics
+- [ ] **US-0121**: Subtopic Mastery Breakdown
+- [ ] **US-0122**: Positive Reinforcement
+
+### Tracking Service Gaps
+- [ ] **US-0123**: Event Payload Validation
+- [ ] **US-0124**: Role-Based Event Access Control
+- [ ] **US-0125**: Cursor-Based Pagination
+- [ ] **US-0126**: Event Export (CSV/JSON)
+- [ ] **US-0127**: Event Aggregations
+- [ ] **US-0128**: Query Result Limits
+- [ ] **US-0129**: Performance Monitoring
+
+### AI Service Gaps
+- [ ] **US-0130**: AI Performance Monitoring
+- [ ] **US-0131**: Follow-Up Feedback Requests
