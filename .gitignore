@@ -30,3 +30,13 @@ Thumbs.db
 # Test Artifacts
 e2e_results*.txt
 *.json
+
+# Temporary files and logs
+*_logs.txt
+*_logs_*.txt
+simulation_*.txt
+simulation*.log
+
+# Secrets
+client_secret.txt
+*.secret
