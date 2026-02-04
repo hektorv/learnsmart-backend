@@ -19,6 +19,7 @@ import java.util.Map;
 public class LearningPlanController {
 
     private final LearningPlanService planService;
+    private final com.learnsmart.planning.service.ReplanTriggerService triggerService;
 
     @PostMapping("/diagnostics")
     public ResponseEntity<ExternalDtos.GenerateDiagnosticTestResponse> generateDiagnosticTest(
@@ -60,6 +61,28 @@ public class LearningPlanController {
     public ResponseEntity<LearningPlan> replan(@PathVariable UUID id, @RequestParam String reason,
             @RequestBody(required = false) String constraints) {
         return new ResponseEntity<>(planService.replan(id, reason, constraints), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/replan-triggers")
+    public ResponseEntity<List<com.learnsmart.planning.dto.PlanDtos.ReplanTriggerResponse>> getReplanTriggers(
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(triggerService.findPendingTriggers(id).stream()
+                .map(this::mapToTriggerResponse)
+                .collect(java.util.stream.Collectors.toList()));
+    }
+
+    private com.learnsmart.planning.dto.PlanDtos.ReplanTriggerResponse mapToTriggerResponse(
+            com.learnsmart.planning.model.ReplanTrigger trigger) {
+        com.learnsmart.planning.dto.PlanDtos.ReplanTriggerResponse res = new com.learnsmart.planning.dto.PlanDtos.ReplanTriggerResponse();
+        res.setId(trigger.getId());
+        res.setPlanId(trigger.getPlan().getId());
+        res.setTriggerType(trigger.getTriggerType());
+        res.setTriggerReason(trigger.getTriggerReason());
+        res.setSeverity(trigger.getSeverity());
+        res.setDetectedAt(trigger.getDetectedAt());
+        res.setStatus(trigger.getStatus());
+        res.setMetadata(trigger.getMetadata());
+        return res;
     }
 
     @GetMapping("/certificates")

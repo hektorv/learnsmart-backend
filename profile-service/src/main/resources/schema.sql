@@ -11,17 +11,36 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 
 CREATE TABLE IF NOT EXISTS user_goals (
+    id                    UUID PRIMARY KEY,
+    user_id               UUID NOT NULL,
+    title                 VARCHAR(200) NOT NULL,
+    description           TEXT,
+    domain                VARCHAR(50),
+    target_level          VARCHAR(50),
+    due_date              DATE,
+    intensity             VARCHAR(20),
+    is_active             BOOLEAN NOT NULL DEFAULT true,
+    completed_at          TIMESTAMPTZ,
+    completion_percentage INTEGER DEFAULT 0,
+    status                VARCHAR(20) DEFAULT 'active',
+    created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- US-094: Audit log table
+CREATE TABLE IF NOT EXISTS user_audit_log (
     id           UUID PRIMARY KEY,
     user_id      UUID NOT NULL,
-    title        VARCHAR(200) NOT NULL,
-    description  TEXT,
-    domain       VARCHAR(50),
-    target_level VARCHAR(50),
-    due_date     DATE,
-    intensity    VARCHAR(20),
-    is_active    BOOLEAN NOT NULL DEFAULT true,
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    performed_by UUID NOT NULL,
+    entity_type  VARCHAR(50) NOT NULL,
+    entity_id    UUID NOT NULL,
+    action       VARCHAR(20) NOT NULL,
+    field_name   VARCHAR(100),
+    old_value    TEXT,
+    new_value    TEXT,
+    timestamp    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ip_address   VARCHAR(45),
+    user_agent   TEXT
 );
 
 CREATE TABLE IF NOT EXISTS badges (

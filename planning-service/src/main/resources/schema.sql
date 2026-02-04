@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS plan_replans_history;
+DROP TABLE IF EXISTS replan_triggers;
 DROP TABLE IF EXISTS plan_activities;
 DROP TABLE IF EXISTS plan_modules;
 DROP TABLE IF EXISTS certificates;
@@ -41,6 +42,9 @@ CREATE TABLE IF NOT EXISTS plan_activities (
     content_ref             TEXT NOT NULL,
     estimated_minutes       INT,
     override_estimated_minutes INT,
+    started_at              TIMESTAMPTZ,
+    completed_at            TIMESTAMPTZ,
+    actual_minutes_spent    INT,
     created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (module_id, position)
@@ -63,3 +67,18 @@ CREATE TABLE IF NOT EXISTS certificates (
     description     TEXT,
     issued_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS replan_triggers (
+    id UUID PRIMARY KEY,
+    plan_id UUID NOT NULL REFERENCES learning_plans(id) ON DELETE CASCADE,
+    trigger_type VARCHAR(50) NOT NULL,
+    trigger_reason TEXT NOT NULL,
+    severity VARCHAR(20) NOT NULL,
+    detected_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    evaluated_at TIMESTAMPTZ,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    metadata TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_trigger_plan_status ON replan_triggers(plan_id, status);
+CREATE INDEX IF NOT EXISTS idx_trigger_status_detected ON replan_triggers(status, detected_at DESC);

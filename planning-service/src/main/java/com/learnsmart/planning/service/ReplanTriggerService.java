@@ -26,8 +26,8 @@ public class ReplanTriggerService {
 
     private final ReplanTriggerRepository triggerRepository;
     private final PlanActivityRepository activityRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     // Trigger type constants
     private static final String TRIGGER_PROGRESS_DEVIATION = "PROGRESS_DEVIATION";

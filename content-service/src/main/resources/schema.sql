@@ -2,7 +2,8 @@ CREATE TABLE IF NOT EXISTS domains (
     id          UUID PRIMARY KEY,
     code        VARCHAR(50) UNIQUE NOT NULL,
     name        VARCHAR(100) NOT NULL,
-    description TEXT
+    description TEXT,
+    status      VARCHAR(20) NOT NULL DEFAULT 'published'
 );
 
 CREATE TABLE IF NOT EXISTS skills (

@@ -9,5 +9,8 @@ public interface PlanModuleService {
 
     PlanModule updateModuleStatus(UUID planId, UUID moduleId, String status);
 
+    com.learnsmart.planning.model.PlanActivity addActivity(UUID planId, UUID moduleId,
+            com.learnsmart.planning.dto.PlanDtos.CreateActivityRequest request);
+
     PlanModule findById(UUID moduleId);
 }

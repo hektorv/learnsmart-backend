@@ -37,5 +37,28 @@ public class PlanDtos {
         private String status;
         private String contentRef;
         private Integer estimatedMinutes;
+        private java.time.OffsetDateTime startedAt;
+        private java.time.OffsetDateTime completedAt;
+        private Integer actualMinutesSpent;
+    }
+
+    @Data
+    public static class CreateActivityRequest {
+        private Integer position;
+        private String activityType;
+        private String contentRef;
+        private Integer estimatedMinutes;
+    }
+
+    @Data
+    public static class ReplanTriggerResponse {
+        private UUID id;
+        private UUID planId;
+        private String triggerType;
+        private String triggerReason;
+        private String severity;
+        private java.time.OffsetDateTime detectedAt;
+        private String status;
+        private String metadata;
     }
 }

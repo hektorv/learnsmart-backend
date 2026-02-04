@@ -420,6 +420,29 @@ public class ProfileServiceImpl {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public List<UserAuditLogResponse> getMyAuditLogs(UUID userId, int page, int size) {
+        return auditService.getAuditTrail(userId, page, size).stream()
+                .map(this::mapToAuditLogResponse)
+                .collect(Collectors.toList());
+    }
+
+    private UserAuditLogResponse mapToAuditLogResponse(com.learnsmart.profile.model.UserAuditLog log) {
+        return UserAuditLogResponse.builder()
+                .id(log.getId())
+                .performedBy(log.getPerformedBy())
+                .entityType(log.getEntityType())
+                .entityId(log.getEntityId())
+                .action(log.getAction())
+                .fieldName(log.getFieldName())
+                .oldValue(log.getOldValue())
+                .newValue(log.getNewValue())
+                .timestamp(log.getTimestamp())
+                .ipAddress(log.getIpAddress())
+                .userAgent(log.getUserAgent())
+                .build();
+    }
+
     /**
      * Get current HTTP request from RequestContextHolder
      * Returns null if not in web context (e.g., during tests)

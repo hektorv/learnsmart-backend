@@ -14,6 +14,7 @@ public class PlanModuleServiceImpl implements PlanModuleService {
 
     private final PlanModuleRepository moduleRepository;
     private final LearningPlanService planService;
+    private final com.learnsmart.planning.repository.PlanActivityRepository activityRepository;
 
     @Override
     public List<PlanModule> getModulesByPlan(UUID planId) {
@@ -34,6 +35,26 @@ public class PlanModuleServiceImpl implements PlanModuleService {
         planService.checkCompletion(planId);
 
         return saved;
+    }
+
+    @Override
+    @Transactional
+    public com.learnsmart.planning.model.PlanActivity addActivity(UUID planId, UUID moduleId,
+            com.learnsmart.planning.dto.PlanDtos.CreateActivityRequest request) {
+        PlanModule module = findById(moduleId);
+        if (!module.getPlan().getId().equals(planId)) {
+            throw new RuntimeException("Module does not belong to plan");
+        }
+
+        com.learnsmart.planning.model.PlanActivity activity = new com.learnsmart.planning.model.PlanActivity();
+        activity.setModule(module);
+        activity.setPosition(request.getPosition());
+        activity.setActivityType(request.getActivityType());
+        activity.setContentRef(request.getContentRef());
+        activity.setEstimatedMinutes(request.getEstimatedMinutes());
+        activity.setStatus("pending");
+
+        return activityRepository.save(activity);
     }
 
     @Override

@@ -36,6 +36,15 @@ public class PlanModuleController {
         return ResponseEntity.ok(toModuleResponse(updated));
     }
 
+    @PostMapping("/{planId}/modules/{moduleId}/activities")
+    public ResponseEntity<ActivityResponse> addActivity(
+            @PathVariable UUID planId,
+            @PathVariable UUID moduleId,
+            @RequestBody CreateActivityRequest request) {
+        com.learnsmart.planning.model.PlanActivity activity = moduleService.addActivity(planId, moduleId, request);
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(toActivityResponse(activity));
+    }
+
     @GetMapping("/{planId}/activities")
     public ResponseEntity<List<ActivityResponse>> getPlanActivities(@PathVariable UUID planId,
             @RequestParam(required = false) UUID moduleId) {
@@ -82,6 +91,9 @@ public class PlanModuleController {
         res.setStatus(activity.getStatus());
         res.setContentRef(activity.getContentRef());
         res.setEstimatedMinutes(activity.getEstimatedMinutes());
+        res.setStartedAt(activity.getStartedAt());
+        res.setCompletedAt(activity.getCompletedAt());
+        res.setActualMinutesSpent(activity.getActualMinutesSpent());
         return res;
     }
 }

@@ -59,6 +59,7 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Skill> getPrerequisites(UUID id) {
         return skillRepository.findById(id)
                 .map(s -> List.copyOf(s.getPrerequisites()))

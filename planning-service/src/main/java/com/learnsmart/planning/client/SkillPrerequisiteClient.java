@@ -23,7 +23,7 @@ public class SkillPrerequisiteClient {
 
     private final RestTemplate restTemplate;
 
-    @Value("${content-service.url:http://content-service:8080}")
+    @Value("${content-service.url:http://content-service}")
     private String contentServiceUrl;
 
     /**
@@ -36,7 +36,7 @@ public class SkillPrerequisiteClient {
     public List<PrerequisiteDtos.SkillDto> getPrerequisites(UUID skillId) {
         try {
             String url = contentServiceUrl + "/skills/" + skillId + "/prerequisites";
-            log.debug("Fetching prerequisites for skill: {}", skillId);
+            log.info("US-111: Fetching prerequisites from: {}", url);
 
             ResponseEntity<List<PrerequisiteDtos.SkillDto>> response = restTemplate.exchange(
                     url,
@@ -46,8 +46,8 @@ public class SkillPrerequisiteClient {
                     });
 
             List<PrerequisiteDtos.SkillDto> prerequisites = response.getBody();
-            log.debug("Found {} prerequisites for skill {}",
-                    prerequisites != null ? prerequisites.size() : 0, skillId);
+            log.info("US-111: Found {} prerequisites for skill {}: {}",
+                    prerequisites != null ? prerequisites.size() : 0, skillId, prerequisites);
 
             return prerequisites != null ? prerequisites : Collections.emptyList();
 

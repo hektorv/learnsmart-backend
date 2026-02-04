@@ -3,7 +3,6 @@ package com.learnsmart.planning.service;
 import com.learnsmart.planning.model.*;
 import com.learnsmart.planning.repository.*;
 import com.learnsmart.planning.client.SkillPrerequisiteClient;
-import com.learnsmart.planning.service.PrerequisiteValidationService;
 import com.learnsmart.planning.dto.PrerequisiteDtos;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

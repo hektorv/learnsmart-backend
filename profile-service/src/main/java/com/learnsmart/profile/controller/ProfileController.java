@@ -58,6 +58,15 @@ public class ProfileController {
         return ResponseEntity.ok(progressService.getConsolidatedProgress(authId));
     }
 
+    // US-094: Audit trail endpoint
+    @GetMapping("/me/audit-logs")
+    public ResponseEntity<List<UserAuditLogResponse>> getMyAuditLogs(
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(profileService.getMyAuditLogs(getUserId(xUserId), page, size));
+    }
+
     @PostMapping
     public ResponseEntity<UserProfileResponse> createProfile(@RequestBody @Valid UserRegistrationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(profileService.registerUser(request));

@@ -3,12 +3,10 @@ package com.learnsmart.planning.service;
 import com.learnsmart.planning.dto.PrerequisiteDtos;
 import com.learnsmart.planning.model.LearningPlan;
 import com.learnsmart.planning.model.PlanModule;
-import com.learnsmart.planning.model.PlanActivity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Service for validating and enforcing skill prerequisite ordering in learning
@@ -39,6 +37,7 @@ public class PrerequisiteValidationService {
 
         // Build skill → module index map
         Map<UUID, Integer> skillToModuleIndex = buildSkillToModuleMap(plan);
+        log.info("US-111: Validating plan for skills: {}", skillToModuleIndex.keySet());
 
         // Validate each skill's prerequisites
         for (Map.Entry<UUID, Integer> entry : skillToModuleIndex.entrySet()) {
@@ -46,6 +45,7 @@ public class PrerequisiteValidationService {
             int moduleIndex = entry.getValue();
 
             List<UUID> prerequisites = skillGraph.getOrDefault(skillId, Collections.emptyList());
+            log.info("US-111: Skill {} (module {}) has prerequisites: {}", skillId, moduleIndex, prerequisites);
 
             for (UUID prerequisiteId : prerequisites) {
                 Integer prerequisiteIndex = skillToModuleIndex.get(prerequisiteId);
@@ -218,7 +218,7 @@ public class PrerequisiteValidationService {
             }
         }
 
-        Collections.reverse(sorted); // DFS gives reverse topological order
+        // Result is already in topological order (B before A if A -> B)
         return sorted;
     }
 

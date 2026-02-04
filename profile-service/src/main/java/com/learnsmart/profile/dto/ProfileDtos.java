@@ -124,4 +124,20 @@ public class ProfileDtos {
         private Integer preferredSessionMinutes;
         private Boolean notificationsEnabled;
     }
+
+    @Data
+    @Builder
+    public static class UserAuditLogResponse {
+        private UUID id;
+        private UUID performedBy;
+        private String entityType;
+        private UUID entityId;
+        private String action;
+        private String fieldName;
+        private String oldValue;
+        private String newValue;
+        private OffsetDateTime timestamp;
+        private String ipAddress;
+        private String userAgent;
+    }
 }
