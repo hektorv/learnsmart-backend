@@ -12,8 +12,8 @@ import uuid
 GATEWAY_URL = os.getenv("GATEWAY_URL", "http://localhost:8762")
 KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "http://localhost:8080")
 REALM = "learnsmart"
-ADMIN_USER = "admin1"
-ADMIN_PASS = "password"
+ADMIN_USER = os.getenv("ADMIN_USERNAME", "admin1")
+ADMIN_PASS = os.getenv("ADMIN_PASSWORD", "password")
 CLIENT_ID = "learnsmart-frontend"
 
 class LearnSmartClient:

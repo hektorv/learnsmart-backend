@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-KEYCLOAK_URL="http://localhost:8080"
-ADMIN_USER="admin"
-ADMIN_PASS="admin"
-REALM="learnsmart"
-CLIENT_ID="learnsmart-frontend"
+KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8080}"
+ADMIN_USER="${ADMIN_USER:-admin}"
+ADMIN_PASS="${ADMIN_PASS:-admin}"
+REALM="${REALM:-learnsmart}"
+CLIENT_ID="${CLIENT_ID:-learnsmart-frontend}"
 
 echo "Waiting for Keycloak to be ready..."
 until curl -s "$KEYCLOAK_URL/realms/master" > /dev/null; do

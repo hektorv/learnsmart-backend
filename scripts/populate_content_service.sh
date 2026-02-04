@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # Configuration
-GATEWAY_URL="http://localhost:8762"
-KEYCLOAK_URL="http://localhost:8080"
-REALM="learnsmart"
-CLIENT_ID="learnsmart-frontend"  # Public client
+# Configuration
+GATEWAY_URL="${GATEWAY_URL:-http://localhost:8762}"
+KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8080}"
+REALM="${REALM:-learnsmart}"
+CLIENT_ID="${CLIENT_ID:-learnsmart-frontend}"  # Public client
 
 # Admin Credentials (created by setup_keycloak.sh)
-USERNAME="admin1"
-PASSWORD="password"
+USERNAME="${ADMIN_USERNAME:-admin1}"
+PASSWORD="${ADMIN_PASSWORD:-password}"
 
 # Ensure jq is installed
 if ! command -v jq &> /dev/null; then
@@ -59,8 +60,8 @@ if [ "$HTTP_STATUS" == "201" ]; then
 else
     # Try to fetch existing domain
     echo "⚠️  Status: $HTTP_STATUS (may already exist)"
-    FETCH_RESP=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" "$GATEWAY_URL/content/domains/DEVOPS")
-    DOMAIN_ID=$(echo "$FETCH_RESP" | jq -r '.id')
+    FETCH_RESP=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" "$GATEWAY_URL/content/domains?code=DEVOPS")
+    DOMAIN_ID=$(echo "$FETCH_RESP" | jq -r '.[0].id')
     if [ "$DOMAIN_ID" != "null" ] && [ -n "$DOMAIN_ID" ]; then
          echo "   ✅ Recovered existing Domain ID: $DOMAIN_ID"
     else

@@ -4,6 +4,23 @@ This directory contains utility scripts for setting up, populating, and testing 
 
 ## 🚀 Quick Start Scripts
 
+### Configuration
+All scripts support the following environment variables (defaults shown):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `KEYCLOAK_URL` | `http://localhost:8080` | URL of Keycloak service |
+| `GATEWAY_URL` | `http://localhost:8762` | URL of API Gateway |
+| `REALM` | `learnsmart` | Keycloak Realm name |
+| `CLIENT_ID` | `learnsmart-frontend` | Keycloak Client ID |
+| `ADMIN_USERNAME` | `admin1` | Admin username |
+| `ADMIN_PASSWORD` | `password` | Admin password |
+
+Example usage:
+```bash
+KEYCLOAK_URL="http://keycloak.railway.app" ./scripts/setup_keycloak.sh
+```
+
 ### 1. `setup_keycloak.sh` - Keycloak Configuration
 
 **Purpose**: Configure Keycloak with the required realm, client, and users.
@@ -123,15 +140,6 @@ python3 scripts/simulate_classroom_load.py
 **Output**: Pass/Fail summary after all sessions complete.
 
 ---
-
-### 5. `security_validation.py` - AI Service Security Audit
-
-**Purpose**: Validate security configurations of the AI service.
-
-**Usage**:
-```bash
-python3 scripts/security_validation.py
-```
 
 ---
 

@@ -2,12 +2,13 @@
 set -e
 
 # Configuration
-KEYCLOAK_URL="http://localhost:8080"
-GATEWAY_URL="http://localhost:8762"
-REALM="learnsmart"
-CLIENT_ID="learnsmart-frontend"
-USERNAME="admin1"
-PASSWORD="password"
+# Configuration
+KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8080}"
+GATEWAY_URL="${GATEWAY_URL:-http://localhost:8762}"
+REALM="${REALM:-learnsmart}"
+CLIENT_ID="${CLIENT_ID:-learnsmart-frontend}"
+USERNAME="${ADMIN_USERNAME:-admin1}"
+PASSWORD="${ADMIN_PASSWORD:-password}"
 
 echo "=================================================="
 echo "   LearnSmart Setup & Population Script"
@@ -120,8 +121,8 @@ DEVOPS_ID=$(create_resource "content/domains" "$DEVOPS_JSON" "Domain 'DevOps'")
 
 if [ -z "$DEVOPS_ID" ]; then
      # Fetch existing
-     FETCH=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" "$GATEWAY_URL/content/domains/DEVOPS")
-     DEVOPS_ID=$(echo "$FETCH" | jq -r '.id')
+     FETCH=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" "$GATEWAY_URL/content/domains?code=DEVOPS")
+     DEVOPS_ID=$(echo "$FETCH" | jq -r '.[0].id')
 fi
 echo "      → DevOps Domain ID: $DEVOPS_ID"
 
@@ -134,8 +135,8 @@ CLOUD_JSON='{
 CLOUD_ID=$(create_resource "content/domains" "$CLOUD_JSON" "Domain 'Cloud'")
 
 if [ -z "$CLOUD_ID" ]; then
-     FETCH=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" "$GATEWAY_URL/content/domains/CLOUD")
-     CLOUD_ID=$(echo "$FETCH" | jq -r '.id')
+     FETCH=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" "$GATEWAY_URL/content/domains?code=CLOUD")
+     CLOUD_ID=$(echo "$FETCH" | jq -r '.[0].id')
 fi
 echo "      → Cloud Domain ID: $CLOUD_ID"
 

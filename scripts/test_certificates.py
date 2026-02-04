@@ -4,17 +4,21 @@ import json
 import uuid
 import time
 
-GATEWAY_URL = "http://localhost:8762"
-KEYCLOAK_URL = "http://localhost:8080"
-REALM = "learnsmart"
+import os
+
+GATEWAY_URL = os.getenv("GATEWAY_URL", "http://localhost:8762")
+KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "http://localhost:8080")
+REALM = os.getenv("REALM", "learnsmart")
 CLIENT_ID = "learnsmart-frontend"
+ADMIN_USER = os.getenv("ADMIN_USERNAME", "admin1")
+ADMIN_PASS = os.getenv("ADMIN_PASSWORD", "password")
 
 def get_token():
     url = f"{KEYCLOAK_URL}/realms/{REALM}/protocol/openid-connect/token"
     payload = {
         "client_id": CLIENT_ID,
-        "username": "admin1", 
-        "password": "password",
+        "username": ADMIN_USER, 
+        "password": ADMIN_PASS,
         "grant_type": "password"
     }
     try:
