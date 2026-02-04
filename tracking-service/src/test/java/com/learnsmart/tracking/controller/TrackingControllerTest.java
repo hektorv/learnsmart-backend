@@ -35,16 +35,32 @@ class TrackingControllerTest {
     void testCreateEvent() {
         LearningEvent event = new LearningEvent();
         event.setEventType("content_view");
+        event.setPayload(
+                "{\"contentItemId\":\"123e4567-e89b-12d3-a456-426614174000\",\"startTime\":\"2024-01-01T10:00:00Z\"}");
 
         doNothing().when(service).createEvent(any(LearningEvent.class));
 
-        ResponseEntity<Void> response = controller.createEvent(event);
+        ResponseEntity<?> response = controller.createEvent(event);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         verify(service).createEvent(event);
     }
 
     @Test
-    void testListEvents() {
+    void testCreateEventWithValidationError() {
+        LearningEvent event = new LearningEvent();
+        event.setEventType("CONTENT_START");
+        event.setPayload("{\"invalid\":\"data\"}");
+
+        doThrow(new IllegalArgumentException("Missing required field 'contentItemId'"))
+                .when(service).createEvent(any(LearningEvent.class));
+
+        ResponseEntity<?> response = controller.createEvent(event);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(service).createEvent(event);
+    }
+
+    @Test
+    void testGetEvents() {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 20);
         Page<LearningEvent> page = new PageImpl<>(Collections.emptyList());
@@ -52,15 +68,15 @@ class TrackingControllerTest {
         when(service.listEvents(userId, null, null, null, null, null, pageable))
                 .thenReturn(page);
 
-        ResponseEntity<Page<LearningEvent>> response = controller.listEvents(
+        Page<LearningEvent> result = controller.getEvents(
                 userId, null, null, null, null, null, pageable);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().isEmpty());
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
-    void testListEvents_WithFilters() {
+    void testGetEventsWithFilters() {
         UUID userId = UUID.randomUUID();
         UUID entityId = UUID.randomUUID();
         OffsetDateTime from = OffsetDateTime.now().minusDays(7);
@@ -71,10 +87,10 @@ class TrackingControllerTest {
         when(service.listEvents(userId, "content_view", "content", entityId, from, to, pageable))
                 .thenReturn(page);
 
-        ResponseEntity<Page<LearningEvent>> response = controller.listEvents(
+        Page<LearningEvent> result = controller.getEvents(
                 userId, "content_view", "content", entityId, from, to, pageable);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(result);
         verify(service).listEvents(userId, "content_view", "content", entityId, from, to, pageable);
     }
 }

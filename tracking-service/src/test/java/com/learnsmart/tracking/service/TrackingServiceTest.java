@@ -2,6 +2,7 @@ package com.learnsmart.tracking.service;
 
 import com.learnsmart.tracking.model.LearningEvent;
 import com.learnsmart.tracking.repository.LearningEventRepository;
+import com.learnsmart.tracking.validator.EventPayloadValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +28,9 @@ class TrackingServiceTest {
     @Mock
     private LearningEventRepository repository;
 
+    @Mock
+    private EventPayloadValidator payloadValidator;
+
     @InjectMocks
     private TrackingService trackingService;
 
@@ -34,8 +38,13 @@ class TrackingServiceTest {
     void testCreateEvent() {
         LearningEvent event = new LearningEvent();
         event.setEventType("content_view");
+        event.setPayload("{\"test\":\"data\"}");
+
+        doNothing().when(payloadValidator).validate(anyString(), anyString());
 
         trackingService.createEvent(event);
+
+        verify(payloadValidator).validate("content_view", "{\"test\":\"data\"}");
         verify(repository).save(event);
     }
 
