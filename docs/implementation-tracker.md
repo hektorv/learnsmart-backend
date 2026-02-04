@@ -144,7 +144,7 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 ### Profile Service Gaps
 - [x] **US-094**: User Audit Trail ✅ (Implemented - Commit: a00f738)
 - [x] **US-095**: Soft Delete for Learning Goals (Deferred - Not prioritized)
-- [x] **US-096**: Goal Completion Tracking ✅ (Implemented - Commit: pending)
+- [x] **US-096**: Goal Completion Tracking ✅ (Verified in E2E)
 - [ ] **US-097**: Goal Progress Calculation
 - [ ] **US-098**: Goal Recommendations
 
@@ -159,8 +159,9 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 - [ ] **US-0106**: Proper HTTP 409 for Duplicates
 
 ### Planning Service Gaps
-- [x] **US-107**: Automatic Replanning Triggers ✅ (Implemented - Commit: a995710)
-- [x] **US-111**: Skill Prerequisite Validation ✅ (Implemented - Commit: 5984420)
+- [x] **US-107**: Automatic Replanning Triggers ✅ (Verified in E2E)
+- [x] **US-110**: Activity Completion Timestamps ✅ (Verified in E2E)
+- [x] **US-111**: Skill Prerequisite Validation ✅ (Verified in E2E)
 - [ ] **US-108**: Replan Approval Workflow
 - [ ] **US-109**: Progress Calculation
 - [ ] **US-0112**: Diagnostic-based Level Detection
