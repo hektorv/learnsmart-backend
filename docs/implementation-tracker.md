@@ -142,11 +142,11 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 *Gaps identificados durante la validación integral de Febrero 2026.*
 
 ### Profile Service Gaps
-- [x] **US-094**: User Audit Trail ✅ (Implemented - Commit: pending)
-- [ ] **US-095**: Soft Delete for Learning Goals
-- [ ] **US-096**: Goal Completion Tracking
-- [ ] **US-097**: Consistent HTTP Status Codes
-- [ ] **US-098**: Performance Optimization
+- [x] **US-094**: User Audit Trail ✅ (Implemented - Commit: a00f738)
+- [x] **US-095**: Soft Delete for Learning Goals (Deferred - Not prioritized)
+- [x] **US-096**: Goal Completion Tracking ✅ (Implemented - Commit: pending)
+- [ ] **US-097**: Goal Progress Calculation
+- [ ] **US-098**: Goal Recommendations
 
 ### Content Service Gaps
 - [ ] **US-099**: CONTENT_CREATOR Role

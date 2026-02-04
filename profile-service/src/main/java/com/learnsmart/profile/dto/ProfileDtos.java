@@ -2,11 +2,14 @@ package com.learnsmart.profile.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -93,6 +96,11 @@ public class ProfileDtos {
         private Boolean isActive;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+
+        // US-096: Completion tracking fields
+        private OffsetDateTime completedAt;
+        private Integer completionPercentage;
+        private String status;
     }
 
     @Data

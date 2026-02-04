@@ -229,6 +229,77 @@ public class ProfileServiceImpl {
         goalRepository.delete(goal);
     }
 
+    // US-096: Mark goal as completed
+    @Transactional
+    public UserGoalResponse markGoalAsCompleted(UUID userId, UUID goalId) {
+        UserGoal goal = goalRepository.findById(goalId)
+                .filter(g -> g.getUserId().equals(userId))
+                .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
+
+        UserGoal oldGoalCopy = copyGoal(goal);
+        goal.markCompleted();
+        UserGoal completedGoal = goalRepository.save(goal);
+
+        // Audit logging
+        auditService.logGoalChange(
+                userId, userId, "COMPLETE",
+                oldGoalCopy, completedGoal,
+                getCurrentRequest());
+
+        return mapToGoalResponse(completedGoal);
+    }
+
+    // US-096: Update goal progress
+    @Transactional
+    public UserGoalResponse updateGoalProgress(UUID userId, UUID goalId, int percentage) {
+        if (percentage < 0 || percentage > 100) {
+            throw new IllegalArgumentException("Percentage must be between 0 and 100");
+        }
+
+        UserGoal goal = goalRepository.findById(goalId)
+                .filter(g -> g.getUserId().equals(userId))
+                .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
+
+        UserGoal oldGoalCopy = copyGoal(goal);
+        goal.updateProgress(percentage);
+        UserGoal updatedGoal = goalRepository.save(goal);
+
+        // Audit logging
+        auditService.logGoalChange(
+                userId, userId, "UPDATE_PROGRESS",
+                oldGoalCopy, updatedGoal,
+                getCurrentRequest());
+
+        return mapToGoalResponse(updatedGoal);
+    }
+
+    // US-096: Get goals by status
+    public List<UserGoalResponse> getGoalsByStatus(UUID userId, String status) {
+        return goalRepository.findByUserIdAndStatus(userId, status).stream()
+                .map(this::mapToGoalResponse)
+                .collect(Collectors.toList());
+    }
+
+    // US-096: Helper method to copy goal for audit trail
+    private UserGoal copyGoal(UserGoal goal) {
+        return UserGoal.builder()
+                .id(goal.getId())
+                .userId(goal.getUserId())
+                .title(goal.getTitle())
+                .description(goal.getDescription())
+                .domain(goal.getDomain())
+                .targetLevel(goal.getTargetLevel())
+                .dueDate(goal.getDueDate())
+                .intensity(goal.getIntensity())
+                .isActive(goal.getIsActive())
+                .completedAt(goal.getCompletedAt())
+                .completionPercentage(goal.getCompletionPercentage())
+                .status(goal.getStatus())
+                .createdAt(goal.getCreatedAt())
+                .updatedAt(goal.getUpdatedAt())
+                .build();
+    }
+
     // --- PREFERENCES ---
 
     @Transactional(readOnly = true)
@@ -311,6 +382,9 @@ public class ProfileServiceImpl {
                 .dueDate(g.getDueDate())
                 .intensity(g.getIntensity())
                 .isActive(g.getIsActive())
+                .completedAt(g.getCompletedAt()) // US-096
+                .completionPercentage(g.getCompletionPercentage()) // US-096
+                .status(g.getStatus()) // US-096
                 .createdAt(g.getCreatedAt())
                 .updatedAt(g.getUpdatedAt())
                 .build();

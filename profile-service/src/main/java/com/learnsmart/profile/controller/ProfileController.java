@@ -115,6 +115,32 @@ public class ProfileController {
         return ResponseEntity.noContent().build();
     }
 
+    // US-096: Mark goal as completed
+    @PostMapping("/me/goals/{goalId}/complete")
+    public ResponseEntity<UserGoalResponse> markGoalAsCompleted(
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @PathVariable UUID goalId) {
+        return ResponseEntity.ok(profileService.markGoalAsCompleted(getUserId(xUserId), goalId));
+    }
+
+    // US-096: Update goal progress
+    @PatchMapping("/me/goals/{goalId}/progress")
+    public ResponseEntity<UserGoalResponse> updateGoalProgress(
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @PathVariable UUID goalId,
+            @RequestBody java.util.Map<String, Integer> request) {
+        int percentage = request.getOrDefault("percentage", 0);
+        return ResponseEntity.ok(profileService.updateGoalProgress(getUserId(xUserId), goalId, percentage));
+    }
+
+    // US-096: Get goals by status
+    @GetMapping("/me/goals/status/{status}")
+    public ResponseEntity<List<UserGoalResponse>> getGoalsByStatus(
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @PathVariable String status) {
+        return ResponseEntity.ok(profileService.getGoalsByStatus(getUserId(xUserId), status));
+    }
+
     // --- PREFERENCES ---
 
     @GetMapping("/me/preferences")
