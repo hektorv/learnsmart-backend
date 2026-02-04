@@ -5,8 +5,6 @@ import uuid
 import time
 
 GATEWAY_URL = "http://localhost:8762"
-# Direct URLs to bypass Gateway if needed
-PLANNING_URL = "http://localhost:8083"
 KEYCLOAK_URL = "http://localhost:8080"
 REALM = "learnsmart"
 CLIENT_ID = "learnsmart-frontend"
@@ -52,7 +50,7 @@ def test_certificates():
     }
     
     print("Creating Plan...")
-    resp = requests.post(f"{PLANNING_URL}/plans", headers=headers, json=plan_payload)
+    resp = requests.post(f"{GATEWAY_URL}/planning/plans", headers=headers, json=plan_payload)
     if resp.status_code != 201:
         print(f"Failed to create plan: {resp.status_code} {resp.text}")
         return
@@ -61,10 +59,10 @@ def test_certificates():
     plan_id = plan["id"]
     print(f"Plan Created: {plan_id}")
     
-    modules = plan["modules"]
+    modules = plan.get("modules", [])
     if not modules:
         # Refetch modules if not returned in create response (depending on implementation)
-        resp = requests.get(f"{PLANNING_URL}/plans/{plan_id}/modules", headers=headers)
+        resp = requests.get(f"{GATEWAY_URL}/planning/plans/{plan_id}/modules", headers=headers)
         modules = resp.json()
         
     print(f"Modules: {len(modules)}")
@@ -76,7 +74,7 @@ def test_certificates():
         # Update status
         # PATCH /plans/{planId}/modules/{moduleId}
         update_payload = {"status": "completed"}
-        resp = requests.patch(f"{PLANNING_URL}/plans/{plan_id}/modules/{mod_id}", headers=headers, json=update_payload)
+        resp = requests.patch(f"{GATEWAY_URL}/planning/plans/{plan_id}/modules/{mod_id}", headers=headers, json=update_payload)
         if resp.status_code != 200:
             print(f"Failed to update module {mod_id}: {resp.text}")
             return
@@ -86,7 +84,7 @@ def test_certificates():
     # Give a moment for async if any (though it's sync in implementation)
     time.sleep(1)
     
-    resp = requests.get(f"{PLANNING_URL}/plans/certificates?userId={user_id}", headers=headers)
+    resp = requests.get(f"{GATEWAY_URL}/planning/plans/certificates?userId={user_id}", headers=headers)
     if resp.status_code == 200:
         certs = resp.json()
         print(f"Certificates found: {len(certs)}")

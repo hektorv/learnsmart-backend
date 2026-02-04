@@ -108,50 +108,50 @@ def run_simulation():
     domain_list = domains if isinstance(domains, list) else domains.get('content', [])
     if domain_list:
         print(f"  > Domain found: {domain_list[0]['name']}")
+        domain_id = domain_list[0]['id']
     else:
         print("  > Creating 'react-dev' domain...")
-        admin.post("/content/domains", {"code": "react-dev", "name": "React Development", "description": "Master React"})
+        domain_res = admin.post("/content/domains", {"code": "react-dev", "name": "React Development", "description": "Master React"})
+        domain_id = domain_res['id']
 
     # Create Skills with Prerequisites (US-111)
-    print("\n  > Creating Skills with Prerequisites (US-111)...")
+    print("\n  > Ensuring Skills with Prerequisites (US-111)...")
     
-    # JavaScript skill (no prerequisites)
-    js_skill = admin.post("/content/skills", {
-        "domain": "react-dev",
-        "code": "javascript-fundamentals",
-        "name": "JavaScript Fundamentals",
-        "description": "Core JavaScript concepts",
-        "level": "BEGINNER"
-    })
+    def get_or_create_skill(code, name, description, level):
+        existing = admin.get("/content/skills", params={"code": code})
+        skill_list = existing if isinstance(existing, list) else existing.get('content', [])
+        if skill_list:
+            print(f"    - Skill '{code}' already exists.")
+            return skill_list[0]
+        print(f"    - Creating skill '{code}'...")
+        return admin.post("/content/skills", {
+            "domainId": domain_id,
+            "code": code,
+            "name": name,
+            "description": description,
+            "level": level
+        })
+
+    js_id, react_id, hooks_id = None, None, None
+    js_skill = get_or_create_skill("javascript-fundamentals", "JavaScript Fundamentals", "Core JS", "BEGINNER")
+    react_skill = get_or_create_skill("react-basics", "React Basics", "React components", "INTERMEDIATE")
+    hooks_skill = get_or_create_skill("react-hooks", "React Hooks", "useEffect, useState", "INTERMEDIATE")
     
-    # React skill (requires JavaScript)
-    react_skill = admin.post("/content/skills", {
-        "domain": "react-dev",
-        "code": "react-basics",
-        "name": "React Basics",
-        "description": "React components and props",
-        "level": "INTERMEDIATE"
-    })
-    
-    # React Hooks skill (requires React)
-    hooks_skill = admin.post("/content/skills", {
-        "domain": "react-dev",
-        "code": "react-hooks",
-        "name": "React Hooks",
-        "description": "useState, useEffect, custom hooks",
-        "level": "INTERMEDIATE"
-    })
+    if js_skill: js_id = js_skill['id']
+    if react_skill: react_id = react_skill['id']
+    if hooks_skill: hooks_id = hooks_skill['id']
     
     if js_skill and react_skill and hooks_skill:
         js_id = js_skill['id']
         react_id = react_skill['id']
         hooks_id = hooks_skill['id']
         
-        # Set prerequisites: React requires JavaScript
-        admin.post(f"/content/skills/{react_id}/prerequisites/{js_id}", {})
-        
-        # Set prerequisites: Hooks requires React
-        admin.post(f"/content/skills/{hooks_id}/prerequisites/{react_id}", {})
+        if js_id and react_id and hooks_id:
+            # Set prerequisites: React requires JavaScript
+            admin.put(f"/content/skills/{react_id}/prerequisites", [js_id])
+            
+            # Set prerequisites: Hooks requires React
+            admin.put(f"/content/skills/{hooks_id}/prerequisites", [react_id])
         
         print(f"    - JavaScript: {js_id}")
         print(f"    - React (requires JS): {react_id}")
@@ -257,6 +257,9 @@ def run_simulation():
     # ==========================================
     print("\n--- 6. PLAN CREATION (US-111: Prerequisite Validation) ---")
     
+    plan_id = None
+    modules = []
+    
     # Create plan with modules that have targetSkills
     plan_payload = {
         "userId": student.user_id,
@@ -343,7 +346,7 @@ def run_simulation():
             
             # Start activity
             print(f"    - Starting activity: {activity.get('activityType', 'UNKNOWN')}")
-            student.patch(f"/planning/plans/{plan_id}/modules/{module_id}/activities/{activity_id}", {
+            student.patch(f"/planning/plans/{plan_id}/activities/{activity_id}", {
                 "status": "in_progress"
             })
             
@@ -351,7 +354,7 @@ def run_simulation():
             
             # Complete activity (should auto-set timestamps)
             print(f"    - Completing activity...")
-            completed = student.patch(f"/planning/plans/{plan_id}/modules/{module_id}/activities/{activity_id}", {
+            completed = student.patch(f"/planning/plans/{plan_id}/activities/{activity_id}", {
                 "status": "completed"
             })
             
