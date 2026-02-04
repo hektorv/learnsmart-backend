@@ -1,17 +1,28 @@
-# back-end-cloud-gateway
+# API Gateway
 
-Example implementation of a Reverse Proxy using Spring Cloud Gateway.
+Entry point for the LearnSmart backend. Handles routing, authentication, and load balancing for all microservices.
 
-[Official Documentation](https://cloud.spring.io/spring-cloud-gateway/reference/html/)
+## Configuration
 
-[More information](https://www.baeldung.com/spring-cloud-gateway)
+| Environment Variable | Default | Description |
+|----------------------|---------|-------------|
+| `PORT` | `8762` | Server port |
+| `HOSTNAME` | `localhost` | Hostname for Gateway instance |
+| `EUREKA_URL` | `http://localhost:8761/eureka/` | Discovery service URL |
+| `KEYCLOAK_CLIENT_SECRET` | *(Required)* | Client secret for 'api-gateway' client in Keycloak |
+| `ROUTE_TABLES_ENABLED` | `true` | Enable dynamic routing based on discovery |
 
-To compile and build the project you can run the command ``mvn clean package``
+## Key Routes
 
-You can deploy the project on Railway using the following button:
+- `/auth/**` -> Profile Service (Auth)
+- `/profiles/**` -> Profile Service
+- `/content/**` -> Content Service
+- `/planning/**` -> Planning Service
+- `/assessment/**` -> Assessment Service
+- `/tracking/**` -> Tracking Service
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/OI2sbM?referralCode=jesus-unir)
+## Running Locally
 
-If you want to deploy this project within an entire Spring microservices ecosystem, you can use the following button:
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/f6CKpT?referralCode=jesus-unir)
+```bash
+mvn spring-boot:run
+```
