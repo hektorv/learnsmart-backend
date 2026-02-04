@@ -7,9 +7,12 @@ import com.learnsmart.profile.repository.UserGoalRepository;
 import com.learnsmart.profile.repository.UserProfileRepository;
 import com.learnsmart.profile.repository.UserStudyPreferencesRepository;
 import com.learnsmart.profile.model.UserStudyPreferences;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +25,7 @@ public class ProfileServiceImpl {
     private final UserProfileRepository profileRepository;
     private final UserGoalRepository goalRepository;
     private final UserStudyPreferencesRepository preferencesRepository;
+    private final AuditService auditService;
 
     @Transactional
     public UserProfileResponse registerUser(UserRegistrationRequest request) {
@@ -51,6 +55,16 @@ public class ProfileServiceImpl {
                 .build();
 
         profile = profileRepository.save(profile);
+
+        // US-094: Log profile creation
+        auditService.logProfileChange(
+                profile.getUserId(),
+                profile.getUserId(), // User created their own profile
+                "CREATE",
+                null,
+                profile,
+                getCurrentRequest());
+
         return mapToProfileResponse(profile);
     }
 
@@ -74,20 +88,43 @@ public class ProfileServiceImpl {
 
     @Transactional
     public UserProfileResponse updateProfile(UUID userId, UserProfileUpdateRequest request) {
-        UserProfile profile = profileRepository.findById(userId)
+        UserProfile oldProfile = profileRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (request.getDisplayName() != null)
-            profile.setDisplayName(request.getDisplayName());
-        if (request.getBirthYear() != null)
-            profile.setBirthYear(request.getBirthYear());
-        if (request.getLocale() != null)
-            profile.setLocale(request.getLocale());
-        if (request.getTimezone() != null)
-            profile.setTimezone(request.getTimezone());
+        // Create a copy for audit trail
+        UserProfile oldProfileCopy = UserProfile.builder()
+                .userId(oldProfile.getUserId())
+                .authUserId(oldProfile.getAuthUserId())
+                .email(oldProfile.getEmail())
+                .displayName(oldProfile.getDisplayName())
+                .birthYear(oldProfile.getBirthYear())
+                .locale(oldProfile.getLocale())
+                .timezone(oldProfile.getTimezone())
+                .createdAt(oldProfile.getCreatedAt())
+                .updatedAt(oldProfile.getUpdatedAt())
+                .build();
 
-        profile = profileRepository.save(profile);
-        return mapToProfileResponse(profile);
+        if (request.getDisplayName() != null)
+            oldProfile.setDisplayName(request.getDisplayName());
+        if (request.getBirthYear() != null)
+            oldProfile.setBirthYear(request.getBirthYear());
+        if (request.getLocale() != null)
+            oldProfile.setLocale(request.getLocale());
+        if (request.getTimezone() != null)
+            oldProfile.setTimezone(request.getTimezone());
+
+        UserProfile updatedProfile = profileRepository.save(oldProfile);
+
+        // US-094: Log profile update
+        auditService.logProfileChange(
+                userId,
+                userId, // User updated their own profile
+                "UPDATE",
+                oldProfileCopy,
+                updatedProfile,
+                getCurrentRequest());
+
+        return mapToProfileResponse(updatedProfile);
     }
 
     @Transactional(readOnly = true)
@@ -111,32 +148,67 @@ public class ProfileServiceImpl {
                 .build();
 
         goal = goalRepository.save(goal);
+
+        // US-094: Log goal creation
+        auditService.logGoalChange(
+                userId,
+                userId,
+                "CREATE",
+                null,
+                goal,
+                getCurrentRequest());
+
         return mapToGoalResponse(goal);
     }
 
     @Transactional
     public UserGoalResponse updateGoal(UUID userId, UUID goalId, UserGoalUpdateRequest request) {
-        UserGoal goal = goalRepository.findById(goalId)
+        UserGoal oldGoal = goalRepository.findById(goalId)
                 .filter(g -> g.getUserId().equals(userId))
                 .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
 
-        if (request.getTitle() != null)
-            goal.setTitle(request.getTitle());
-        if (request.getDescription() != null)
-            goal.setDescription(request.getDescription());
-        if (request.getDomain() != null)
-            goal.setDomain(request.getDomain());
-        if (request.getTargetLevel() != null)
-            goal.setTargetLevel(request.getTargetLevel());
-        if (request.getDueDate() != null)
-            goal.setDueDate(request.getDueDate());
-        if (request.getIntensity() != null)
-            goal.setIntensity(request.getIntensity());
-        if (request.getIsActive() != null)
-            goal.setIsActive(request.getIsActive());
+        // Create a copy for audit trail
+        UserGoal oldGoalCopy = UserGoal.builder()
+                .id(oldGoal.getId())
+                .userId(oldGoal.getUserId())
+                .title(oldGoal.getTitle())
+                .description(oldGoal.getDescription())
+                .domain(oldGoal.getDomain())
+                .targetLevel(oldGoal.getTargetLevel())
+                .dueDate(oldGoal.getDueDate())
+                .intensity(oldGoal.getIntensity())
+                .isActive(oldGoal.getIsActive())
+                .createdAt(oldGoal.getCreatedAt())
+                .updatedAt(oldGoal.getUpdatedAt())
+                .build();
 
-        goal = goalRepository.save(goal);
-        return mapToGoalResponse(goal);
+        if (request.getTitle() != null)
+            oldGoal.setTitle(request.getTitle());
+        if (request.getDescription() != null)
+            oldGoal.setDescription(request.getDescription());
+        if (request.getDomain() != null)
+            oldGoal.setDomain(request.getDomain());
+        if (request.getTargetLevel() != null)
+            oldGoal.setTargetLevel(request.getTargetLevel());
+        if (request.getDueDate() != null)
+            oldGoal.setDueDate(request.getDueDate());
+        if (request.getIntensity() != null)
+            oldGoal.setIntensity(request.getIntensity());
+        if (request.getIsActive() != null)
+            oldGoal.setIsActive(request.getIsActive());
+
+        UserGoal updatedGoal = goalRepository.save(oldGoal);
+
+        // US-094: Log goal update
+        auditService.logGoalChange(
+                userId,
+                userId,
+                "UPDATE",
+                oldGoalCopy,
+                updatedGoal,
+                getCurrentRequest());
+
+        return mapToGoalResponse(updatedGoal);
     }
 
     @Transactional
@@ -144,6 +216,16 @@ public class ProfileServiceImpl {
         UserGoal goal = goalRepository.findById(goalId)
                 .filter(g -> g.getUserId().equals(userId))
                 .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
+
+        // US-094: Log goal deletion (before deleting)
+        auditService.logGoalChange(
+                userId,
+                userId,
+                "DELETE",
+                goal,
+                null,
+                getCurrentRequest());
+
         goalRepository.delete(goal);
     }
 
@@ -162,8 +244,23 @@ public class ProfileServiceImpl {
 
     @Transactional
     public UserStudyPreferencesResponse updatePreferences(UUID userId, UserStudyPreferencesUpdate request) {
-        UserStudyPreferences prefs = preferencesRepository.findById(userId)
-                .orElse(UserStudyPreferences.builder().userId(userId).build());
+        UserStudyPreferences oldPrefs = preferencesRepository.findById(userId)
+                .orElse(null);
+
+        // Create copy for audit if exists
+        UserStudyPreferences oldPrefsCopy = null;
+        if (oldPrefs != null) {
+            oldPrefsCopy = UserStudyPreferences.builder()
+                    .userId(oldPrefs.getUserId())
+                    .hoursPerWeek(oldPrefs.getHoursPerWeek())
+                    .preferredDays(oldPrefs.getPreferredDays())
+                    .preferredSessionMinutes(oldPrefs.getPreferredSessionMinutes())
+                    .notificationsEnabled(oldPrefs.getNotificationsEnabled())
+                    .build();
+        }
+
+        UserStudyPreferences prefs = oldPrefs != null ? oldPrefs
+                : UserStudyPreferences.builder().userId(userId).build();
 
         if (request.getHoursPerWeek() != null)
             prefs.setHoursPerWeek(request.getHoursPerWeek());
@@ -174,8 +271,19 @@ public class ProfileServiceImpl {
         if (request.getNotificationsEnabled() != null)
             prefs.setNotificationsEnabled(request.getNotificationsEnabled());
 
-        prefs = preferencesRepository.save(prefs);
-        return mapToPreferencesResponse(prefs);
+        UserStudyPreferences updatedPrefs = preferencesRepository.save(prefs);
+
+        // US-094: Log preferences update/create
+        String action = oldPrefs == null ? "CREATE" : "UPDATE";
+        auditService.logPreferencesChange(
+                userId,
+                userId,
+                action,
+                oldPrefsCopy,
+                updatedPrefs,
+                getCurrentRequest());
+
+        return mapToPreferencesResponse(updatedPrefs);
     }
 
     private UserProfileResponse mapToProfileResponse(UserProfile p) {
@@ -216,5 +324,19 @@ public class ProfileServiceImpl {
                 .preferredSessionMinutes(p.getPreferredSessionMinutes())
                 .notificationsEnabled(p.getNotificationsEnabled())
                 .build();
+    }
+
+    /**
+     * Get current HTTP request from RequestContextHolder
+     * Returns null if not in web context (e.g., during tests)
+     */
+    private HttpServletRequest getCurrentRequest() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
+                    .getRequestAttributes();
+            return attributes != null ? attributes.getRequest() : null;
+        } catch (Exception e) {
+            return null; // Not in web context
+        }
     }
 }

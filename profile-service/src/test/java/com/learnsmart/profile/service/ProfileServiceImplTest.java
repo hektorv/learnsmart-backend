@@ -39,6 +39,9 @@ class ProfileServiceImplTest {
     @Mock
     private UserStudyPreferencesRepository preferencesRepository;
 
+    @Mock
+    private AuditService auditService;
+
     @InjectMocks
     private ProfileServiceImpl profileService;
 

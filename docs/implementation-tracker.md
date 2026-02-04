@@ -142,12 +142,8 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 *Gaps identificados durante la validación integral de Febrero 2026.*
 
 ### Profile Service Gaps
-- [ ] **US-090**: Email Confirmation Workflow
-- [ ] **US-091**: Password Complexity Validation
-- [ ] **US-092**: Course Statistics
-- [ ] **US-093**: Skill Validation against Catalog
-- [ ] **US-094**: User Audit Trail
-- [ ] **US-095**: Physical Deletion of Goals
+- [x] **US-094**: User Audit Trail ✅ (Implemented - Commit: pending)
+- [ ] **US-095**: Soft Delete for Learning Goals
 - [ ] **US-096**: Goal Completion Tracking
 - [ ] **US-097**: Consistent HTTP Status Codes
 - [ ] **US-098**: Performance Optimization
