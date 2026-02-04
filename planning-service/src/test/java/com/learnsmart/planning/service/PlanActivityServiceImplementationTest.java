@@ -4,6 +4,8 @@ import com.learnsmart.planning.model.LearningPlan;
 import com.learnsmart.planning.model.PlanActivity;
 import com.learnsmart.planning.model.PlanModule;
 import com.learnsmart.planning.repository.PlanActivityRepository;
+import com.learnsmart.planning.repository.PlanModuleRepository;
+import com.learnsmart.planning.repository.LearningPlanRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,6 +27,12 @@ class PlanActivityServiceImplementationTest {
     @Mock
     private PlanActivityRepository activityRepository;
 
+    @Mock
+    private PlanModuleRepository moduleRepository;
+
+    @Mock
+    private LearningPlanRepository planRepository;
+
     @InjectMocks
     private PlanActivityServiceImplementation activityService;
 
@@ -42,11 +50,14 @@ class PlanActivityServiceImplementationTest {
     void testUpdateActivityStatus_Success() {
         UUID planId = UUID.randomUUID();
         UUID activityId = UUID.randomUUID();
+        UUID moduleId = UUID.randomUUID();
 
         LearningPlan plan = new LearningPlan();
         plan.setId(planId);
+        plan.setUserId(UUID.randomUUID().toString());
 
         PlanModule module = new PlanModule();
+        module.setId(moduleId);
         module.setPlan(plan);
 
         PlanActivity activity = new PlanActivity();
@@ -56,6 +67,7 @@ class PlanActivityServiceImplementationTest {
 
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(activity));
         when(activityRepository.save(any(PlanActivity.class))).thenAnswer(i -> i.getArgument(0));
+        when(activityRepository.findByModuleIdOrderByPositionAsc(moduleId)).thenReturn(List.of(activity));
 
         PlanActivity result = activityService.updateActivityStatus(planId, activityId, "completed", null);
         assertEquals("completed", result.getStatus());
@@ -66,11 +78,14 @@ class PlanActivityServiceImplementationTest {
     void testUpdateActivityStatus_WithOverrideMinutes() {
         UUID planId = UUID.randomUUID();
         UUID activityId = UUID.randomUUID();
+        UUID moduleId = UUID.randomUUID();
 
         LearningPlan plan = new LearningPlan();
         plan.setId(planId);
+        plan.setUserId(UUID.randomUUID().toString());
 
         PlanModule module = new PlanModule();
+        module.setId(moduleId);
         module.setPlan(plan);
 
         PlanActivity activity = new PlanActivity();
@@ -79,6 +94,7 @@ class PlanActivityServiceImplementationTest {
 
         when(activityRepository.findById(activityId)).thenReturn(Optional.of(activity));
         when(activityRepository.save(any(PlanActivity.class))).thenAnswer(i -> i.getArgument(0));
+        when(activityRepository.findByModuleIdOrderByPositionAsc(moduleId)).thenReturn(List.of(activity));
 
         PlanActivity result = activityService.updateActivityStatus(planId, activityId, "completed", 45);
         assertEquals("completed", result.getStatus());

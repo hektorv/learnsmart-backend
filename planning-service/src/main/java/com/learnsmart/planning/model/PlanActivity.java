@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.UUID;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "plan_activities", uniqueConstraints = {
@@ -49,6 +50,16 @@ public class PlanActivity {
     @Column(name = "override_estimated_minutes")
     private Integer overrideEstimatedMinutes;
 
+    // US-110: Activity Completion Timestamps
+    @Column(name = "started_at")
+    private OffsetDateTime startedAt;
+
+    @Column(name = "completed_at")
+    private OffsetDateTime completedAt;
+
+    @Column(name = "actual_minutes_spent")
+    private Integer actualMinutesSpent;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -66,5 +77,20 @@ public class PlanActivity {
     @PreUpdate
     public void preUpdate() {
         updatedAt = OffsetDateTime.now();
+
+        // US-110: Auto-set timestamps based on status changes
+        if ("in_progress".equals(status) && startedAt == null) {
+            startedAt = OffsetDateTime.now();
+        }
+
+        if ("completed".equals(status) && completedAt == null) {
+            completedAt = OffsetDateTime.now();
+
+            // Calculate actual time spent if startedAt exists
+            if (startedAt != null) {
+                long minutes = ChronoUnit.MINUTES.between(startedAt, completedAt);
+                actualMinutesSpent = (int) minutes;
+            }
+        }
     }
 }
