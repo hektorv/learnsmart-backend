@@ -159,12 +159,10 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 - [ ] **US-0106**: Proper HTTP 409 for Duplicates
 
 ### Planning Service Gaps
-- [x] **US-0107**: Automatic Replanning Triggers ✅ (Implemented - Commit: pending)
-- [ ] **US-0108**: Skill Prerequisite Validation
-- [ ] **US-0109**: Plan Versioning
-- [ ] **US-0110**: Activity Completion Timestamps (Already implemented in tracking-service)
-- [ ] **US-0111**: Certificate Generation
-- [ ] **US-0111**: Skill Prerequisite Validation in Planning
+- [x] **US-107**: Automatic Replanning Triggers ✅ (Implemented - Commit: a995710)
+- [x] **US-111**: Skill Prerequisite Validation ⚠️ (Infrastructure Complete - Commit: pending, awaiting AI service update)
+- [ ] **US-108**: Replan Approval Workflow
+- [ ] **US-109**: Progress Calculation
 - [ ] **US-0112**: Diagnostic-based Level Detection
 
 ### Assessment Service Gaps

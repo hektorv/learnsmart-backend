@@ -2,6 +2,9 @@ package com.learnsmart.planning.service;
 
 import com.learnsmart.planning.model.*;
 import com.learnsmart.planning.repository.*;
+import com.learnsmart.planning.client.SkillPrerequisiteClient;
+import com.learnsmart.planning.service.PrerequisiteValidationService;
+import com.learnsmart.planning.dto.PrerequisiteDtos;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +16,7 @@ import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.Objects;
 import com.learnsmart.planning.client.Clients;
 import com.learnsmart.planning.dto.ExternalDtos;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +33,11 @@ public class LearningPlanServiceImpl implements LearningPlanService {
     private final Clients.ContentClient contentClient;
     private final Clients.AiClient aiClient;
     private final ReplanTriggerService triggerService;
-    private final ObjectMapper objectMapper = new ObjectMapper(); // For JSON serialization
+    private final ObjectMapper objectMapper; // For JSON serialization
+
+    // US-111: Prerequisite Validation
+    private final SkillPrerequisiteClient skillPrerequisiteClient;
+    private final PrerequisiteValidationService prerequisiteValidator;
 
     @Override
     @Transactional
@@ -129,6 +137,61 @@ public class LearningPlanServiceImpl implements LearningPlanService {
                 }
             }
         }
+
+        // US-111: Prerequisite Validation
+        // Note: Currently disabled as targetSkills are not populated by AI service
+        // TODO: Enable once AI service populates targetSkills in module drafts
+        /*
+         * if (plan.getModules() != null && !plan.getModules().isEmpty()) {
+         * try {
+         * // Extract skill IDs from plan
+         * List<UUID> skillIds = plan.getModules().stream()
+         * .filter(m -> m.getTargetSkills() != null && !m.getTargetSkills().isEmpty())
+         * .flatMap(m -> m.getTargetSkills().stream())
+         * .map(skillRef -> {
+         * try {
+         * return UUID.fromString(skillRef);
+         * } catch (IllegalArgumentException e) {
+         * return null;
+         * }
+         * })
+         * .filter(Objects::nonNull)
+         * .distinct()
+         * .toList();
+         * 
+         * if (!skillIds.isEmpty()) {
+         * // Fetch skill graph
+         * Map<UUID, List<UUID>> skillGraph =
+         * skillPrerequisiteClient.getSkillGraph(skillIds);
+         * 
+         * // Validate prerequisites
+         * List<PrerequisiteDtos.PrerequisiteViolation> violations =
+         * prerequisiteValidator.validatePlan(plan, skillGraph);
+         * 
+         * if (!violations.isEmpty()) {
+         * System.out.println("US-111: Prerequisite violations detected: " +
+         * violations.size());
+         * 
+         * // Attempt automatic re-ordering
+         * try {
+         * plan = prerequisiteValidator.reorderForPrerequisites(plan, skillGraph);
+         * System.out.
+         * println("US-111: Successfully reordered plan to satisfy prerequisites");
+         * } catch (Exception reorderEx) {
+         * System.err.println("US-111: Failed to reorder plan: " +
+         * reorderEx.getMessage());
+         * // Continue with original plan but log warning
+         * }
+         * }
+         * }
+         * } catch (Exception e) {
+         * System.err.println("US-111: Error during prerequisite validation: " +
+         * e.getMessage());
+         * // Continue with plan generation even if validation fails
+         * }
+         * }
+         */
+
         return planRepository.save(plan);
     }
 
