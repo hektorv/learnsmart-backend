@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -178,6 +179,8 @@ public class ProfileServiceImpl {
                 .dueDate(oldGoal.getDueDate())
                 .intensity(oldGoal.getIntensity())
                 .isActive(oldGoal.getIsActive())
+                .status(oldGoal.getStatus())
+                .completionPercentage(oldGoal.getCompletionPercentage())
                 .createdAt(oldGoal.getCreatedAt())
                 .updatedAt(oldGoal.getUpdatedAt())
                 .build();
@@ -196,6 +199,23 @@ public class ProfileServiceImpl {
             oldGoal.setIntensity(request.getIntensity());
         if (request.getIsActive() != null)
             oldGoal.setIsActive(request.getIsActive());
+
+        // US-096: Handle status and completion percentage
+        if (request.getStatus() != null) {
+            oldGoal.setStatus(request.getStatus());
+            // Auto-set completedAt if status is COMPLETED
+            if ("COMPLETED".equalsIgnoreCase(request.getStatus()) && oldGoal.getCompletedAt() == null) {
+                oldGoal.setCompletedAt(OffsetDateTime.now());
+            }
+        }
+        if (request.getProgressPercentage() != null) {
+            oldGoal.setCompletionPercentage(request.getProgressPercentage());
+            // Auto-complete if progress reaches 100%
+            if (request.getProgressPercentage() >= 100 && oldGoal.getCompletedAt() == null) {
+                oldGoal.setStatus("COMPLETED");
+                oldGoal.setCompletedAt(OffsetDateTime.now());
+            }
+        }
 
         UserGoal updatedGoal = goalRepository.save(oldGoal);
 

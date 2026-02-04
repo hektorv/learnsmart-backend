@@ -107,6 +107,15 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateGoal(getUserId(xUserId), goalId, request));
     }
 
+    // US-096: PATCH for partial goal updates (status, progress, etc.)
+    @PatchMapping("/me/goals/{goalId}")
+    public ResponseEntity<UserGoalResponse> patchGoal(
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @PathVariable UUID goalId,
+            @RequestBody UserGoalUpdateRequest request) {
+        return ResponseEntity.ok(profileService.updateGoal(getUserId(xUserId), goalId, request));
+    }
+
     @DeleteMapping("/me/goals/{goalId}")
     public ResponseEntity<Void> deleteGoal(
             @RequestHeader(value = "X-User-Id", required = false) String xUserId,

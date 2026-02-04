@@ -80,6 +80,9 @@ public class ProfileDtos {
         private LocalDate dueDate;
         private String intensity;
         private Boolean isActive;
+        // US-096: Goal completion tracking
+        private String status; // ACTIVE, COMPLETED, PAUSED, ABANDONED
+        private Integer progressPercentage; // 0-100
     }
 
     @Data
