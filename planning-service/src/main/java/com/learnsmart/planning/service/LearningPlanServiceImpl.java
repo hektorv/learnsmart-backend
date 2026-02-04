@@ -28,6 +28,7 @@ public class LearningPlanServiceImpl implements LearningPlanService {
     private final Clients.ProfileClient profileClient;
     private final Clients.ContentClient contentClient;
     private final Clients.AiClient aiClient;
+    private final ReplanTriggerService triggerService;
     private final ObjectMapper objectMapper = new ObjectMapper(); // For JSON serialization
 
     @Override
@@ -241,6 +242,20 @@ public class LearningPlanServiceImpl implements LearningPlanService {
             history.setReason(reason);
             history.setRequestPayload(constraints != null ? constraints : "Replan triggered");
             history.setResponsePayload(response != null ? response.getChangeSummary() : "No AI response");
+
+            // US-107: Link to trigger if this replan was triggered automatically
+            // Check for pending HIGH severity triggers and mark as EXECUTED
+            if (reason != null && reason.contains("trigger")) {
+                triggerService.findPendingTriggers(id).stream()
+                        .filter(t -> "HIGH".equals(t.getSeverity()))
+                        .findFirst()
+                        .ifPresent(trigger -> {
+                            trigger.setStatus("EXECUTED");
+                            trigger.setEvaluatedAt(java.time.OffsetDateTime.now());
+                            history.setTriggerId(trigger.getId());
+                        });
+            }
+
             replanRepository.save(history);
 
             return planRepository.save(existing);

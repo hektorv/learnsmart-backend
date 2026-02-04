@@ -37,6 +37,9 @@ public class PlanReplanHistory {
     @Column(name = "response_payload", columnDefinition = "TEXT") // JSON mapped as TEXT for compatibility
     private String responsePayload;
 
+    @Column(name = "trigger_id")
+    private UUID triggerId; // US-107: Link to ReplanTrigger if auto-triggered
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
