@@ -48,6 +48,10 @@ public class UserGoal {
     @Builder.Default
     private Boolean isActive = true;
 
+    // US-093: Link to specific skill
+    @Column(name = "skill_id")
+    private UUID skillId;
+
     // US-096: Completion tracking fields
     @Column(name = "completed_at")
     private OffsetDateTime completedAt;

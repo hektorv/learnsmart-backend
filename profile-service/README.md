@@ -12,7 +12,8 @@ Manages user profiles, preferences, and study goals. Also handles user registrat
 | `DB_USER` | `postgres` | Database User |
 | `DB_PASSWORD` | `postgres` | Database Password |
 | `EUREKA_URL` | `http://localhost:8761/eureka/` | Discovery service URL |
-| `HOSTNAME` | `localhost` | Hostname |
+| `HOSTNAME` | `localhost` | Hostname for Eureka registration |
+| `KEYCLOAK_INTERNAL_URL` | `http://keycloak:8080` | Internal URL for S2S Keycloak communication |
 
 ## Dependencies
 - **Data Store**: PostgreSQL

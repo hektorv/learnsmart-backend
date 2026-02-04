@@ -65,6 +65,7 @@ public class ProfileDtos {
         private String title;
         private String description;
         private String domain;
+        private UUID skillId; // US-093
         private String targetLevel;
         private LocalDate dueDate;
         private String intensity;
@@ -93,6 +94,7 @@ public class ProfileDtos {
         private String title;
         private String description;
         private String domain;
+        private UUID skillId; // US-093
         private String targetLevel;
         private LocalDate dueDate;
         private String intensity;

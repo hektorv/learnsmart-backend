@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -27,6 +29,7 @@ public class ProfileServiceImpl {
     private final UserGoalRepository goalRepository;
     private final UserStudyPreferencesRepository preferencesRepository;
     private final AuditService auditService;
+    private final com.learnsmart.profile.client.ContentServiceClient contentClient;
 
     @Transactional
     public UserProfileResponse registerUser(UserRegistrationRequest request) {
@@ -142,11 +145,53 @@ public class ProfileServiceImpl {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .domain(request.getDomain())
+                .skillId(request.getSkillId()) // US-093
                 .targetLevel(request.getTargetLevel())
                 .dueDate(request.getDueDate())
                 .intensity(request.getIntensity())
                 .isActive(true)
                 .build();
+
+        // US-093: Validate Domain and Skill
+        if (request.getDomain() != null && !request.getDomain().isEmpty()) {
+            try {
+                var domains = contentClient.getDomains(request.getDomain());
+                if (domains == null || domains.isEmpty()) {
+                    throw new IllegalArgumentException("Domain not found: " + request.getDomain());
+                }
+            } catch (Exception e) {
+                // If not found (404) or other error, treat as validation failure for Strict
+                // Mode
+                if (e instanceof ResponseStatusException)
+                    throw e;
+                // Log the real error for debugging
+                System.err.println("Domain validation failed: " + e.getMessage());
+                e.printStackTrace();
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Invalid domain: " + request.getDomain() + " (Catalog service check failed: " + e.getMessage()
+                                + ")");
+            }
+        }
+
+        if (request.getSkillId() != null) {
+            try {
+                // Check if skill exists
+                var skill = contentClient.getSkill(request.getSkillId());
+                if (skill == null) {
+                    throw new IllegalArgumentException("Skill not found: " + request.getSkillId());
+                }
+                // Optional: Check if skill belongs to domain if both provided
+                if (request.getDomain() != null && skill.getDomain() != null
+                        && !request.getDomain().equals(skill.getDomain().getCode())) {
+                    throw new IllegalArgumentException(
+                            "Skill '" + skill.getCode() + "' does not belong to domain '" + request.getDomain() + "'");
+                }
+            } catch (Exception e) {
+                if (e instanceof ResponseStatusException)
+                    throw e;
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid skillId: " + request.getSkillId());
+            }
+        }
 
         goal = goalRepository.save(goal);
 
@@ -169,28 +214,26 @@ public class ProfileServiceImpl {
                 .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
 
         // Create a copy for audit trail
-        UserGoal oldGoalCopy = UserGoal.builder()
-                .id(oldGoal.getId())
-                .userId(oldGoal.getUserId())
-                .title(oldGoal.getTitle())
-                .description(oldGoal.getDescription())
-                .domain(oldGoal.getDomain())
-                .targetLevel(oldGoal.getTargetLevel())
-                .dueDate(oldGoal.getDueDate())
-                .intensity(oldGoal.getIntensity())
-                .isActive(oldGoal.getIsActive())
-                .status(oldGoal.getStatus())
-                .completionPercentage(oldGoal.getCompletionPercentage())
-                .createdAt(oldGoal.getCreatedAt())
-                .updatedAt(oldGoal.getUpdatedAt())
-                .build();
+        UserGoal oldGoalCopy = copyGoal(oldGoal);
 
         if (request.getTitle() != null)
             oldGoal.setTitle(request.getTitle());
         if (request.getDescription() != null)
             oldGoal.setDescription(request.getDescription());
-        if (request.getDomain() != null)
+        if (request.getDomain() != null) {
+            // US-093 Validation on Update
+            try {
+                var domains = contentClient.getDomains(request.getDomain());
+                if (domains == null || domains.isEmpty()) {
+                    throw new IllegalArgumentException("Domain not found: " + request.getDomain());
+                }
+            } catch (Exception e) {
+                if (e instanceof ResponseStatusException)
+                    throw e;
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid domain: " + request.getDomain());
+            }
             oldGoal.setDomain(request.getDomain());
+        }
         if (request.getTargetLevel() != null)
             oldGoal.setTargetLevel(request.getTargetLevel());
         if (request.getDueDate() != null)
@@ -308,6 +351,7 @@ public class ProfileServiceImpl {
                 .title(goal.getTitle())
                 .description(goal.getDescription())
                 .domain(goal.getDomain())
+                .skillId(goal.getSkillId()) // US-093
                 .targetLevel(goal.getTargetLevel())
                 .dueDate(goal.getDueDate())
                 .intensity(goal.getIntensity())
@@ -398,6 +442,7 @@ public class ProfileServiceImpl {
                 .title(g.getTitle())
                 .description(g.getDescription())
                 .domain(g.getDomain())
+                .skillId(g.getSkillId()) // US-093
                 .targetLevel(g.getTargetLevel())
                 .dueDate(g.getDueDate())
                 .intensity(g.getIntensity())

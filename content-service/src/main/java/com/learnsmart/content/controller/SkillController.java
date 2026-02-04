@@ -28,6 +28,13 @@ public class SkillController {
         return skillService.findAll(domainId, code, null, page, size);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Skill> getSkill(@PathVariable UUID id) {
+        return skillService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Skill> createSkill(@RequestBody ContentDtos.SkillInput input) {

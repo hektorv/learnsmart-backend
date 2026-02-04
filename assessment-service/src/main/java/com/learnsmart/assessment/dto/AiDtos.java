@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import java.util.List;
 import java.util.Map;
 
+import java.util.UUID;
+
 public class AiDtos {
 
     @Data
@@ -18,6 +20,7 @@ public class AiDtos {
         private String domain;
         private List<Map<String, Object>> skillState;
         private List<Map<String, Object>> recentHistory;
+        private List<UUID> excludeItemIds;
     }
 
     @Data

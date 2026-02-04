@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -41,6 +43,12 @@ public class AssessmentSession {
 
     @Column(name = "completed_at")
     private OffsetDateTime completedAt;
+
+    // US-0115: Deduplication
+    @ElementCollection
+    @CollectionTable(name = "assessment_session_presented_items", joinColumns = @JoinColumn(name = "session_id"))
+    @Column(name = "item_id")
+    private List<UUID> presentedItemIds = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {

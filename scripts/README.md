@@ -95,8 +95,32 @@ python3 scripts/simulate_react_learning.py
 - ✅ US-096: Goal Completion Tracking
 - ✅ US-123: Event Payload Validation
 - ✅ US-111: Skill Prerequisite Validation
+- ✅ US-093: Skill Validation (Profile service)
+- ✅ US-0115: Assessment Item Deduplication
 
 **Output**: Complete simulation log with test results
+
+---
+
+### 5. `simulate_classroom_load.py` - Load & Robustness Test
+
+**Purpose**: Simulates multiple concurrent students to verify system stability under load.
+
+**Prerequisites**:
+- All services running
+- Keycloak configured
+
+**Usage**:
+```bash
+python3 scripts/simulate_classroom_load.py
+```
+
+**Features**:
+- 🚀 **Concurrency**: Runs 5 parallel student sessions (configurable).
+- 🔄 **Isolation**: Generates unique users and data for each thread to avoid collisions.
+- 🛡️ **Robustness**: Validates that no race conditions or locks freeze the system during high activity.
+
+**Output**: Pass/Fail summary after all sessions complete.
 
 ---
 

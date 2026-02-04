@@ -14,7 +14,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "http://localhost:5173"
+            allowedOrigins: "${FRONTEND_URL:http://localhost:5173}"
             allowedMethods:
               - GET
               - POST
@@ -75,12 +75,12 @@ spring:
       client:
         provider:
           keycloak:
-            # Client (Browser) needs to access Keycloak via localhost
-            authorization-uri: http://localhost:8080/realms/learnsmart/protocol/openid-connect/auth
-            # Gateway (Server) needs to access Keycloak via internal network (keycloak:8080)
-            token-uri: http://keycloak:8080/realms/learnsmart/protocol/openid-connect/token
-            user-info-uri: http://keycloak:8080/realms/learnsmart/protocol/openid-connect/userinfo
-            jwk-set-uri: http://keycloak:8080/realms/learnsmart/protocol/openid-connect/certs
+            # Client (Browser) needs to access Keycloak via public URL
+            authorization-uri: ${KEYCLOAK_PUBLIC_URL:http://localhost:8080}/realms/learnsmart/protocol/openid-connect/auth
+            # Gateway (Server) needs to access Keycloak via internal network
+            token-uri: ${KEYCLOAK_INTERNAL_URL:http://keycloak:8080}/realms/learnsmart/protocol/openid-connect/token
+            user-info-uri: ${KEYCLOAK_INTERNAL_URL:http://keycloak:8080}/realms/learnsmart/protocol/openid-connect/userinfo
+            jwk-set-uri: ${KEYCLOAK_INTERNAL_URL:http://keycloak:8080}/realms/learnsmart/protocol/openid-connect/certs
             user-name-attribute: preferred_username
         registration:
           keycloak:
@@ -92,7 +92,7 @@ spring:
             scope: openid, profile, email
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak:8080/realms/learnsmart/protocol/openid-connect/certs
+          jwk-set-uri: ${KEYCLOAK_INTERNAL_URL:http://keycloak:8080}/realms/learnsmart/protocol/openid-connect/certs
 
 
 eureka:

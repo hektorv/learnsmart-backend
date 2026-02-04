@@ -92,17 +92,23 @@ class LearnSmartClient:
         print(f"  Response: {response.text}")
         return None
 
-def run_simulation():
-    print("=== ENHANCED REACT LEARNING SIMULATION (v3) ===")
+def run_simulation(simulation_id=None):
+    if simulation_id is None:
+        simulation_id = int(time.time())
+        
+    print(f"=== ENHANCED REACT LEARNING SIMULATION (ID: {simulation_id}) ===")
     print("Testing: US-110, US-094, US-107, US-096, US-123, US-111\n")
 
     # ==========================================
     # STEP 1: Content Setup (Admin)
     # ==========================================
-    print("--- 1. CONTENT SETUP ---")
+    # Skip Content Setup if not running as main single instance (optional optimisation)
+    # But for robustness, let's keep it safe or use a lock. 
+    # Actually, GETs are safe. CREATEs might race.
+    print(f"[{simulation_id}] --- 1. CONTENT SETUP ---")
     admin = LearnSmartClient("ADMIN")
     admin.login(ADMIN_USER, ADMIN_PASS)
-
+    
     # Check/Create Domain
     domains = admin.get("/content/domains", params={"code": "react-dev"})
     domain_list = domains if isinstance(domains, list) else domains.get('content', [])
@@ -169,13 +175,12 @@ def run_simulation():
             "content": "# React Hooks\nHooks let you use state...", 
             "status": "PUBLISHED"
         })
-
+    
     # ==========================================
     # STEP 2: Student Registration
     # ==========================================
-    print("\n--- 2. STUDENT REGISTRATION ---")
-    timestamp = int(time.time())
-    username = f"student_{timestamp}"
+    print(f"\n[{simulation_id}] --- 2. STUDENT REGISTRATION ---")
+    username = f"student_{simulation_id}"
     email = f"{username}@example.com"
     password = "password123"
 
@@ -224,11 +229,41 @@ def run_simulation():
     # ==========================================
     print("\n--- 4. GOAL MANAGEMENT (US-096: Goal Completion Tracking) ---")
     
-    # Create Learning Goal
+    # US-093: Skill Validation Tests
+    print("  > Testing US-093: Skill Validation...")
+    
+    # Negative Test 1: Invalid Domain
+    print("    - Negative Test 1: Invalid Domain")
+    res = student.post("/profiles/me/goals", {
+        "title": "Invalid Goal",
+        "domain": "invalid-domain-123",
+        "targetLevel": "INTERMEDIATE"
+    })
+    if res is None:
+        print("      ✅ Passed: Rejected invalid domain (as expected)")
+    else:
+        print("      ❌ Failed: Should have rejected invalid domain")
+
+    # Negative Test 2: Invalid Skill ID
+    print("    - Negative Test 2: Invalid Skill ID")
+    res = student.post("/profiles/me/goals", {
+        "title": "Invalid Skill Goal",
+        "domain": "react-dev",
+        "skillId": str(uuid.uuid4()), # Random UUID
+        "targetLevel": "INTERMEDIATE"
+    })
+    if res is None:
+        print("      ✅ Passed: Rejected invalid skillId (as expected)")
+    else:
+        print("      ❌ Failed: Should have rejected invalid skillId")
+
+    # Create Learning Goal (Valid)
+    print("    - Creating Valid Goal (US-093 Verified)...")
     goal = student.post("/profiles/me/goals", {
         "title": "Master React Development",
         "description": "Become proficient in React",
         "domain": "react-dev",
+        "skillId": react_id, # Link to actual skill
         "targetLevel": "INTERMEDIATE",
         "targetDate": "2026-06-01"
     })
@@ -445,8 +480,35 @@ def run_simulation():
         item = student.get(f"/assessment/assessments/sessions/{session_id}/next-item")
         if item:
             item_id = item.get('id') or item.get('tempId')
-            print(f"    - Received Item: {item.get('stem', 'No Stem')[:50]}...")
+            print(f"    - Received Item 1: {item.get('stem', 'No Stem')[:50]}... (ID: {item_id})")
+
+            # US-0115: Deduplication Check
+            print("  > Testing US-0115: Deduplication...")
+            seen_items = set()
+            if item_id: seen_items.add(item_id)
             
+            # Fetch checking for duplicates
+            for i in range(2):
+                next_item = student.get(f"/assessment/assessments/sessions/{session_id}/next-item")
+                if next_item:
+                    nid = next_item.get('id') or next_item.get('tempId')
+                    print(f"      • Item {i+2}: {nid}")
+                    if nid in seen_items:
+                        print(f"      ❌ Failed: Duplicate item received: {nid}")
+                    else:
+                        seen_items.add(nid)
+                else:
+                    print("      ⚠️ Warning: No more items returned")
+            
+            if len(seen_items) >= 2:
+                 print(f"      ✅ US-0115 Passed: Received {len(seen_items)} unique items.")
+            
+            # Use the last item for response submission
+             # Reset item_id to last one for correct submission flow
+            if next_item:
+                 item = next_item
+                 item_id = nid
+
             if item_id:
                 options = item.get('options', [])
                 option_id = options[0]['id'] if options else None

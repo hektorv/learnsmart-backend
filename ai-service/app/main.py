@@ -37,6 +37,7 @@ class NextItemRequest(BaseModel):
     domain: str
     skillState: List[Dict[str, Any]] = []
     recentHistory: List[Dict[str, Any]] = []
+    excludeItemIds: List[str] = []
 
 class NextItemResponse(BaseModel):
     item: Dict[str, Any]
@@ -125,7 +126,8 @@ def next_item(request: NextItemRequest):
         result = llm_service.generate_next_item(
             domain=val_domain,
             mastery=mastery,
-            recent_history=val_history
+            recent_history=val_history,
+            exclude_item_ids=request.excludeItemIds
         )
         return NextItemResponse(
             item=result.get("item", {}),

@@ -9,6 +9,8 @@ Python-based microservice that provides LLM capabilities for generating personal
 | `PORT` | `8001` | Server port (FastAPI) |
 | `OPENAI_API_KEY` | *(Required)* | OpenAI API Key |
 | `OPENAI_MODEL` | `gpt-3.5-turbo` | Model to use for generation |
+| `EUREKA_URL` | `http://localhost:8761/eureka/` | Discovery service URL (for future registration) |
+| `KEYCLOAK_INTERNAL_URL` | `http://keycloak:8080` | Internal URL for S2S Keycloak communication |
 
 ## Setup
 

@@ -23,7 +23,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak:8080/realms/learnsmart/protocol/openid-connect/certs
+          jwk-set-uri: ${KEYCLOAK_INTERNAL_URL:http://keycloak:8080}/realms/learnsmart/protocol/openid-connect/certs
 
 eureka:
   client:

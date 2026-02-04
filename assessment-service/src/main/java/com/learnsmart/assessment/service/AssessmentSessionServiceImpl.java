@@ -75,6 +75,7 @@ public class AssessmentSessionServiceImpl implements AssessmentSessionService {
                 .domain("JAVA") // TODO: Get from Plan/Goal context
                 .skillState(new ArrayList<>())
                 .recentHistory(recentHistory)
+                .excludeItemIds(session.getPresentedItemIds()) // US-0115
                 .build();
 
         try {
@@ -87,7 +88,22 @@ public class AssessmentSessionServiceImpl implements AssessmentSessionService {
                 // MVP: If ID exists, use it. If not, create ephemeral/new.
                 // For safety in this MVP, we will try to find a real item in DB that matches
                 // criteria or just fallback.
-                // Ideally, we would create a new transient item.
+
+                // US-0115: Record presented item to prevent repetition
+                String itemIdStr = (String) response.getItem().get("id");
+                if (itemIdStr != null) {
+                    try {
+                        UUID itemId = UUID.fromString(itemIdStr);
+                        if (!session.getPresentedItemIds().contains(itemId)) {
+                            session.getPresentedItemIds().add(itemId);
+                            sessionRepository.save(session);
+                        }
+                        // Return the item found/created
+                        return itemRepository.findById(itemId).orElse(null); // Simple lookup for now
+                    } catch (Exception ex) {
+                        System.err.println("Error processing API item ID: " + ex.getMessage());
+                    }
+                }
             }
         } catch (Exception e) {
             System.err.println("AI Next Item failed: " + e.getMessage());
