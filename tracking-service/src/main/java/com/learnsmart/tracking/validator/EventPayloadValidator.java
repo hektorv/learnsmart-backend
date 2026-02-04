@@ -71,6 +71,56 @@ public class EventPayloadValidator {
                         "planId", EventPayloadValidator::isValidUUID,
                         "completedAt", EventPayloadValidator::isValidTimestamp)));
 
+        // MODULE_STARTED: requires moduleId and planId
+        SCHEMAS.put("MODULE_STARTED", new PayloadSchema(
+                Set.of("moduleId", "planId"),
+                Set.of("startTime"),
+                Map.of(
+                        "moduleId", EventPayloadValidator::isValidUUID,
+                        "planId", EventPayloadValidator::isValidUUID)));
+
+        // MODULE_COMPLETED: requires moduleId, planId, completedAt
+        SCHEMAS.put("MODULE_COMPLETED", new PayloadSchema(
+                Set.of("moduleId", "planId", "completedAt"),
+                Set.of("timeSpentMs", "score", "activitiesCompleted"),
+                Map.of(
+                        "moduleId", EventPayloadValidator::isValidUUID,
+                        "planId", EventPayloadValidator::isValidUUID,
+                        "completedAt", EventPayloadValidator::isValidTimestamp)));
+
+        // ACTIVITY_STARTED: requires activityId and planId
+        SCHEMAS.put("ACTIVITY_STARTED", new PayloadSchema(
+                Set.of("activityId", "planId"),
+                Set.of("startTime", "moduleId"),
+                Map.of(
+                        "activityId", EventPayloadValidator::isValidUUID,
+                        "planId", EventPayloadValidator::isValidUUID)));
+
+        // ACTIVITY_COMPLETED: requires activityId, planId, completedAt
+        SCHEMAS.put("ACTIVITY_COMPLETED", new PayloadSchema(
+                Set.of("activityId", "planId", "completedAt"),
+                Set.of("timeSpentMs", "score", "moduleId"),
+                Map.of(
+                        "activityId", EventPayloadValidator::isValidUUID,
+                        "planId", EventPayloadValidator::isValidUUID,
+                        "completedAt", EventPayloadValidator::isValidTimestamp)));
+
+        // ASSESSMENT_STARTED: requires sessionId and skillId
+        SCHEMAS.put("ASSESSMENT_STARTED", new PayloadSchema(
+                Set.of("sessionId", "skillId"),
+                Set.of("assessmentType", "startTime"),
+                Map.of(
+                        "sessionId", EventPayloadValidator::isValidUUID,
+                        "skillId", EventPayloadValidator::isValidUUID)));
+
+        // ASSESSMENT_COMPLETED: requires sessionId and finalScore
+        SCHEMAS.put("ASSESSMENT_COMPLETED", new PayloadSchema(
+                Set.of("sessionId", "finalScore"),
+                Set.of("itemsAnswered", "correctCount", "completedAt"),
+                Map.of(
+                        "sessionId", EventPayloadValidator::isValidUUID,
+                        "finalScore", EventPayloadValidator::isValidScore)));
+
         // PAGE_VIEW: minimal validation (optional fields only)
         SCHEMAS.put("PAGE_VIEW", new PayloadSchema(
                 Set.of(),

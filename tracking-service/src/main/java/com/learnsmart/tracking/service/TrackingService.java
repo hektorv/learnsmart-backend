@@ -17,22 +17,22 @@ import java.util.UUID;
 public class TrackingService {
 
     private final LearningEventRepository repository;
-    private final EventPayloadValidator payloadValidator;
+    private final EventPayloadValidator payloadValidator; // US-123
 
     /**
-     * Asynchronously creates a learning event.
-     * US-086: Async Event Tracking
-     * US-123: Event Payload Validation
+     * Creates a new learning event with payload validation.
+     * US-123: Validates payload before saving.
      *
      * @throws IllegalArgumentException if payload validation fails
      */
-    @org.springframework.scheduling.annotation.Async
     @Transactional
-    public void createEvent(LearningEvent event) {
-        // Validate payload before saving (US-123)
-        payloadValidator.validate(event.getEventType(), event.getPayload());
+    public LearningEvent createEvent(LearningEvent event) {
+        // US-123: Validate payload before saving
+        if (event.getPayload() != null && !event.getPayload().isBlank()) {
+            payloadValidator.validate(event.getEventType(), event.getPayload());
+        }
 
-        repository.save(event);
+        return repository.save(event);
     }
 
     public Page<LearningEvent> listEvents(UUID userId, String eventType, String entityType, UUID entityId,

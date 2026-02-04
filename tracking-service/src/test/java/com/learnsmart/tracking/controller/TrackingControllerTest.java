@@ -25,72 +25,72 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TrackingControllerTest {
 
-    @Mock
-    private TrackingService service;
+        @Mock
+        private TrackingService service;
 
-    @InjectMocks
-    private TrackingController controller;
+        @InjectMocks
+        private TrackingController controller;
 
-    @Test
-    void testCreateEvent() {
-        LearningEvent event = new LearningEvent();
-        event.setEventType("content_view");
-        event.setPayload(
-                "{\"contentItemId\":\"123e4567-e89b-12d3-a456-426614174000\",\"startTime\":\"2024-01-01T10:00:00Z\"}");
+        @Test
+        void testCreateEvent() {
+                LearningEvent event = new LearningEvent();
+                event.setEventType("content_view");
+                event.setPayload(
+                                "{\"contentItemId\":\"123e4567-e89b-12d3-a456-426614174000\",\"startTime\":\"2024-01-01T10:00:00Z\"}");
 
-        doNothing().when(service).createEvent(any(LearningEvent.class));
+                when(service.createEvent(any(LearningEvent.class))).thenReturn(event);
 
-        ResponseEntity<?> response = controller.createEvent(event);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        verify(service).createEvent(event);
-    }
+                ResponseEntity<?> response = controller.createEvent(event);
+                assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+                verify(service).createEvent(event);
+        }
 
-    @Test
-    void testCreateEventWithValidationError() {
-        LearningEvent event = new LearningEvent();
-        event.setEventType("CONTENT_START");
-        event.setPayload("{\"invalid\":\"data\"}");
+        @Test
+        void testCreateEventWithValidationError() {
+                LearningEvent event = new LearningEvent();
+                event.setEventType("CONTENT_START");
+                event.setPayload("{\"invalid\":\"data\"}");
 
-        doThrow(new IllegalArgumentException("Missing required field 'contentItemId'"))
-                .when(service).createEvent(any(LearningEvent.class));
+                when(service.createEvent(any(LearningEvent.class)))
+                                .thenThrow(new IllegalArgumentException("Missing required field 'contentItemId'"));
 
-        ResponseEntity<?> response = controller.createEvent(event);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        verify(service).createEvent(event);
-    }
+                ResponseEntity<?> response = controller.createEvent(event);
+                assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+                verify(service).createEvent(event);
+        }
 
-    @Test
-    void testGetEvents() {
-        UUID userId = UUID.randomUUID();
-        Pageable pageable = PageRequest.of(0, 20);
-        Page<LearningEvent> page = new PageImpl<>(Collections.emptyList());
+        @Test
+        void testGetEvents() {
+                UUID userId = UUID.randomUUID();
+                Pageable pageable = PageRequest.of(0, 20);
+                Page<LearningEvent> page = new PageImpl<>(Collections.emptyList());
 
-        when(service.listEvents(userId, null, null, null, null, null, pageable))
-                .thenReturn(page);
+                when(service.listEvents(userId, null, null, null, null, null, pageable))
+                                .thenReturn(page);
 
-        Page<LearningEvent> result = controller.getEvents(
-                userId, null, null, null, null, null, pageable);
+                Page<LearningEvent> result = controller.getEvents(
+                                userId, null, null, null, null, null, pageable);
 
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-    }
+                assertNotNull(result);
+                assertTrue(result.isEmpty());
+        }
 
-    @Test
-    void testGetEventsWithFilters() {
-        UUID userId = UUID.randomUUID();
-        UUID entityId = UUID.randomUUID();
-        OffsetDateTime from = OffsetDateTime.now().minusDays(7);
-        OffsetDateTime to = OffsetDateTime.now();
-        Pageable pageable = PageRequest.of(0, 20);
-        Page<LearningEvent> page = new PageImpl<>(Collections.emptyList());
+        @Test
+        void testGetEventsWithFilters() {
+                UUID userId = UUID.randomUUID();
+                UUID entityId = UUID.randomUUID();
+                OffsetDateTime from = OffsetDateTime.now().minusDays(7);
+                OffsetDateTime to = OffsetDateTime.now();
+                Pageable pageable = PageRequest.of(0, 20);
+                Page<LearningEvent> page = new PageImpl<>(Collections.emptyList());
 
-        when(service.listEvents(userId, "content_view", "content", entityId, from, to, pageable))
-                .thenReturn(page);
+                when(service.listEvents(userId, "content_view", "content", entityId, from, to, pageable))
+                                .thenReturn(page);
 
-        Page<LearningEvent> result = controller.getEvents(
-                userId, "content_view", "content", entityId, from, to, pageable);
+                Page<LearningEvent> result = controller.getEvents(
+                                userId, "content_view", "content", entityId, from, to, pageable);
 
-        assertNotNull(result);
-        verify(service).listEvents(userId, "content_view", "content", entityId, from, to, pageable);
-    }
+                assertNotNull(result);
+                verify(service).listEvents(userId, "content_view", "content", entityId, from, to, pageable);
+        }
 }
