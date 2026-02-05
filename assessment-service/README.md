@@ -17,7 +17,7 @@ Manages assessments, quizzes, and evaluates user skill mastery levels.
 
 ## Dependencies
 - **Data Store**: PostgreSQL
-- **External Services**: Content Service (for questions/skills)
+- **External Services**: Content Service (for questions/skills), AI Service (via Eureka)
 
 ## API Endpoints
 

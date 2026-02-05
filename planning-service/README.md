@@ -17,7 +17,7 @@ Core service responsible for generating, managing, and updating personalized lea
 
 ## Dependencies
 - **Data Store**: PostgreSQL
-- **External Services**: Content Service, Profile Service, AI Service (via Feign/RestTemplate)
+- **External Services**: Content Service, Profile Service, AI Service (via Eureka/Feign)
 
 ## API Endpoints
 

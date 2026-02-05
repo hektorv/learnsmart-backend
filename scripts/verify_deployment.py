@@ -58,9 +58,9 @@ def main():
     
     # 3. Check Microservices
     services_to_test = [
-        ("Profile Service", "/profiles/me/health-check-public", [400, 401, 403, 404]), # 400/401/403 means auth filter hit service.
+        ("Profile Service", "/profiles/me/progress", [400, 401, 403]), # Expect 401 Unauth or 400 Bad Request
         ("Content Service", "/content/domains", [200, 400, 401]),
-        ("Planning Service", "/planning/plans/health-check-public", [400, 401, 403, 404]),
+        ("Planning Service", "/planning/plans", [400, 401, 403]),
     ]
 
     print("\n--- Service Reachability (via Gateway) ---")

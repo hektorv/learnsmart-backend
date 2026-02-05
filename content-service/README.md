@@ -17,6 +17,7 @@ Manages educational content, domains, skills, and learning resources.
 
 ## Dependencies
 - **Data Store**: PostgreSQL
+- **External Services**: AI Service (via Eureka)
 
 ## API Endpoints
 

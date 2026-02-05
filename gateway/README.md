@@ -84,6 +84,7 @@ Below are the environment variables required for each specific service to start 
 | `PORT` | `8000` | Server Port (FastAPI) |
 | `OPENAI_API_KEY` | *(Required)* | OpenAI API Key |
 | `OPENAI_MODEL` | `gpt-3.5-turbo` | LLM Model to use |
+| `EUREKA_URL` | `http://localhost:8761/eureka/` | Discovery service URL for Registration |
 
 ### 9. Keycloak (Identity Provider)
 | Variable | Default | Description |

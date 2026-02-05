@@ -50,24 +50,6 @@ CREATE TABLE IF NOT EXISTS plan_activities (
     UNIQUE (module_id, position)
 );
 
-CREATE TABLE IF NOT EXISTS plan_replans_history (
-    id              UUID PRIMARY KEY,
-    plan_id         UUID NOT NULL REFERENCES learning_plans(id) ON DELETE CASCADE,
-    reason          TEXT,
-    request_payload TEXT,
-    response_payload TEXT,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS certificates (
-    id              UUID PRIMARY KEY,
-    user_id         UUID NOT NULL,
-    plan_id         UUID NOT NULL UNIQUE REFERENCES learning_plans(id) ON DELETE CASCADE,
-    title           VARCHAR(200) NOT NULL,
-    description     TEXT,
-    issued_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
 CREATE TABLE IF NOT EXISTS replan_triggers (
     id UUID PRIMARY KEY,
     plan_id UUID NOT NULL REFERENCES learning_plans(id) ON DELETE CASCADE,
@@ -78,6 +60,16 @@ CREATE TABLE IF NOT EXISTS replan_triggers (
     evaluated_at TIMESTAMPTZ,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     metadata TEXT
+);
+
+CREATE TABLE IF NOT EXISTS plan_replans_history (
+    id              UUID PRIMARY KEY,
+    plan_id         UUID NOT NULL REFERENCES learning_plans(id) ON DELETE CASCADE,
+    reason          TEXT,
+    request_payload TEXT,
+    response_payload TEXT,
+    trigger_id      UUID REFERENCES replan_triggers(id),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_trigger_plan_status ON replan_triggers(plan_id, status);

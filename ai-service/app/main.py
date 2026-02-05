@@ -1,11 +1,35 @@
 from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+import py_eureka_client.eureka_client as eureka_client
+import os
+import asyncio
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Retrieve env vars for Eureka
+    eureka_server = os.getenv("EUREKA_URL", "http://eureka:8761/eureka/")
+    instance_port = int(os.getenv("PORT", 8000))
+    app_name = "ai-service"
+    
+    # Start Eureka Client
+    print(f"Stats Eureka Client: {eureka_server} for {app_name}:{instance_port}")
+    await eureka_client.init_async(
+        eureka_server=eureka_server,
+        app_name=app_name,
+        instance_port=instance_port
+    )
+    yield
+    # Stop Eureka Client
+    print("Stopping Eureka Client")
+    await eureka_client.stop_async()
+
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import uuid
 from app.services.llm_service import llm_service
 from app.services.input_validator import InputValidator
 
-app = FastAPI(title="AI Service")
+app = FastAPI(title="AI Service", lifespan=lifespan)
 
 # --- Models ---
 # Using generic Dict for complex nested objects to stay flexible with OAS changes

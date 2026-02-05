@@ -6,10 +6,10 @@ Python-based microservice that provides LLM capabilities for generating personal
 
 | Environment Variable | Default | Description |
 |----------------------|---------|-------------|
-| `PORT` | `8001` | Server port (FastAPI) |
+| `PORT` | `8000` | Server port (FastAPI) |
 | `OPENAI_API_KEY` | *(Required)* | OpenAI API Key |
 | `OPENAI_MODEL` | `gpt-3.5-turbo` | Model to use for generation |
-| `EUREKA_URL` | `http://localhost:8761/eureka/` | Discovery service URL (for future registration) |
+| `EUREKA_URL` | `http://localhost:8761/eureka/` | Discovery service URL for Registration |
 | `KEYCLOAK_INTERNAL_URL` | `http://keycloak:8080` | Internal URL for S2S Keycloak communication |
 
 ## Setup
@@ -17,11 +17,11 @@ Python-based microservice that provides LLM capabilities for generating personal
 Requires Python 3.9+
 
 ```bash
-# Install dependencies
+# Install dependencies (incorporates py-eureka-client)
 pip install -r requirements.txt
 
 # Run server
-uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ## API Endpoints
@@ -31,9 +31,13 @@ uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 - `POST /v1/plans/adjustments` - Adjust existing plan based on progress
 
 ### Assessment
-- `POST /v1/assessment/next-item` - Select next best item for adaptive test
-- `POST /v1/assessment/feedback` - Evaluate response and provide AI feedback
-- `POST /v1/assessment/diagnostic` - Generate diagnostic test questions
+- `POST /v1/assessments/items` - Select next best item for adaptive test
+- `POST /v1/assessments/feedback` - Evaluate response and provide AI feedback
+- `POST /v1/assessments/diagnostic-tests` - Generate diagnostic test questions
+
+### Content
+- `POST /v1/contents/lessons` - Generate lesson content/structure
+- `POST /v1/contents/assessment-items` - Generate assessment questions from content
 
 ### Content
 - `POST /v1/content/generate-lessons` - Generate lesson content/structure

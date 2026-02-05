@@ -28,7 +28,7 @@ public interface Clients {
         List<ExternalDtos.ContentItemDto> getContentItems(@RequestParam(value = "size", defaultValue = "100") int size);
     }
 
-    @FeignClient(name = "ai-service", url = "${AI_SERVICE_URL:http://ai-service:8000}", path = "/v1")
+    @FeignClient(name = "ai-service", path = "/v1")
     public interface AiClient {
         @PostMapping("/plans")
         ExternalDtos.GeneratePlanResponse generatePlan(@RequestBody ExternalDtos.GeneratePlanRequest request);

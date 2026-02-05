@@ -2,236 +2,178 @@ services:
   # --- Infrastructure ---
   eureka:
     build: ./back-end-eureka
-    restart: unless-stopped
+    restart: always
     ports:
       - "8761:8761"
     environment:
       - EUREKA_HOST=eureka
+      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms192m
     networks:
       - learnsmart-net
 
   gateway:
     build: ./gateway
-    restart: unless-stopped
+    restart: always
     ports:
       - "8762:8762"
     environment:
       - EUREKA_URL=http://eureka:8761/eureka/
       - HOSTNAME=gateway
+      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms192m
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
     depends_on:
       - eureka
     networks:
       - learnsmart-net
 
-  # --- Databases ---
-  profile-db:
+  # --- Shared Database ---
+  shared-db:
     image: postgres:15-alpine
-    restart: unless-stopped
+    restart: always
     environment:
-      - POSTGRES_DB=profile_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:
-      - "5532:5432"
+      - "5432:5432"
     volumes:
-      - profile_db_data:/var/lib/postgresql/data
+      - shared_db_data:/var/lib/postgresql/data
+      - ./scripts/init-shared-db.sh:/docker-entrypoint-initdb.d/init-shared-db.sh
     networks:
       - learnsmart-net
 
   # --- Microservices ---
   profile-service:
     build: ./profile-service
-    restart: unless-stopped
+    restart: always
     ports:
       - "8081:8081"
     environment:
       - PORT=8081
       - EUREKA_URL=http://eureka:8761/eureka/
-      - DB_HOST=profile-db
+      - DB_HOST=shared-db
       - DB_NAME=profile_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - HOSTNAME=profile-service
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms256m
     depends_on:
       - eureka
-      - profile-db
-    networks:
-      - learnsmart-net
-
-  content-db:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=content_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5533:5432"
-    volumes:
-      - content_db_data:/var/lib/postgresql/data
+      - shared-db
     networks:
       - learnsmart-net
 
   content-service:
     build: ./content-service
-    restart: unless-stopped
+    restart: always
     ports:
       - "8082:8082"
     environment:
       - PORT=8082
       - EUREKA_URL=http://eureka:8761/eureka/
-      - DB_HOST=content-db
+      - DB_HOST=shared-db
       - DB_NAME=content_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - HOSTNAME=content-service
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms256m
     depends_on:
       - eureka
-      - content-db
-    networks:
-      - learnsmart-net
-
-  planning-db:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=planning_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5534:5432"
-    volumes:
-      - planning_db_data:/var/lib/postgresql/data
+      - shared-db
     networks:
       - learnsmart-net
 
   planning-service:
     build: ./planning-service
-    restart: unless-stopped
+    restart: always
     ports:
       - "8083:8083"
     environment:
       - PORT=8083
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=TRACE
       - EUREKA_URL=http://eureka:8761/eureka/
-      - DB_HOST=planning-db
+      - DB_HOST=shared-db
       - DB_NAME=planning_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - HOSTNAME=planning-service
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms256m
     depends_on:
       - eureka
-      - planning-db
-    networks:
-      - learnsmart-net
-
-  assessment-db:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=assessment_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5535:5432"
-    volumes:
-      - assessment_db_data:/var/lib/postgresql/data
+      - shared-db
     networks:
       - learnsmart-net
 
   assessment-service:
     build: ./assessment-service
-    restart: unless-stopped
+    restart: always
     ports:
       - "8084:8084"
     environment:
       - PORT=8084
       - EUREKA_URL=http://eureka:8761/eureka/
-      - DB_HOST=assessment-db
+      - DB_HOST=shared-db
       - DB_NAME=assessment_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - HOSTNAME=assessment-service
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms256m
     depends_on:
       - eureka
-      - assessment-db
-    networks:
-      - learnsmart-net
-
-  ai-service:
-    build: ./ai-service
-    env_file:
-      - ./ai-service/.env
-    environment:
-      - EUREKA_URL=http://eureka:8761/eureka/
-      - PORT=8000
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    networks:
-      - learnsmart-net
-
-  tracking-db:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=tracking_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5536:5432"
-    volumes:
-      - tracking_db_data:/var/lib/postgresql/data
+      - shared-db
     networks:
       - learnsmart-net
 
   tracking-service:
     build: ./tracking-service
-    restart: unless-stopped
+    restart: always
     ports:
       - "8085:8085"
     environment:
       - PORT=8085
       - EUREKA_URL=http://eureka:8761/eureka/
-      - DB_HOST=tracking-db
+      - DB_HOST=shared-db
       - DB_NAME=tracking_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - HOSTNAME=tracking-service
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms256m
     depends_on:
       - eureka
-      - tracking-db
+      - shared-db
+    networks:
+      - learnsmart-net
+
+  ai-service:
+    build: ./ai-service
+    restart: always
+    env_file:
+      - ./ai-service/.env
+    environment:
+      - EUREKA_URL=http://eureka:8761/eureka/
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - eureka
     networks:
       - learnsmart-net
 
   # --- Security ---
-  keycloak-db:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=keycloak
-      - POSTGRES_USER=keycloak
-      - POSTGRES_PASSWORD=password
-    volumes:
-      - keycloak_db_data:/var/lib/postgresql/data
-    networks:
-      - learnsmart-net
-
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.1
-    restart: unless-stopped
+    restart: always
     ports:
       - "8080:8080"
     environment:
       - KC_DB=postgres
-      - KC_DB_URL=jdbc:postgresql://keycloak-db:5432/keycloak
+      - KC_DB_URL=jdbc:postgresql://shared-db:5432/keycloak
       - KC_DB_USERNAME=keycloak
       - KC_DB_PASSWORD=password
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HOSTNAME=${KC_HOSTNAME:-localhost} # CHANGE THIS TO YOUR PUBLIC IP/DOMAIN IN PROD
     command: start-dev
     depends_on:
-      - keycloak-db
+      - shared-db
     networks:
       - learnsmart-net
 
@@ -240,10 +182,4 @@ networks:
     driver: bridge
 
 volumes:
-  profile_db_data:
-  content_db_data:
-  planning_db_data:
-  assessment_db_data:
-  tracking_db_data:
-
-  keycloak_db_data:
+  shared_db_data:
