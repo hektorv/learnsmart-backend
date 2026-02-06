@@ -169,6 +169,29 @@ paths:
         '500':
           description: Error interno del servicio de IA
 
+  /v1/assessments/diagnostic-tests:
+    post:
+      tags: [Assessment]
+      summary: Generar un test de diagnóstico inicial
+      operationId: generateDiagnosticTest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateDiagnosticTestRequest'
+      responses:
+        '200':
+          description: Test de diagnóstico generado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateDiagnosticTestResponse'
+        '400':
+          description: Petición inválida
+        '500':
+          description: Error interno del servicio de IA
+
 components:
   securitySchemes:
     bearerAuth:
@@ -187,9 +210,10 @@ components:
         - skillIds
         - nLessons
       properties:
-        domain:
+        domainId:
           type: string
-          example: math
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
         skillIds:
           type: array
           items:
@@ -236,7 +260,7 @@ components:
         tempId:
           type: string
           description: ID lógico; content-service generará su propio UUID
-        domain:
+        domainId:
           type: string
         skills:
           type: array
@@ -270,7 +294,7 @@ components:
         - skillIds
         - nItems
       properties:
-        domain:
+        domainId:
           type: string
         skillIds:
           type: array
@@ -411,7 +435,7 @@ components:
       required:
         - goalId
         - title
-        - domain
+        - domainId
       properties:
         goalId:
           type: string
@@ -420,8 +444,9 @@ components:
           type: string
         description:
           type: string
-        domain:
+        domainId:
           type: string
+          format: uuid
         targetLevel:
           type: string
         dueDate:
@@ -460,7 +485,7 @@ components:
         id:
           type: string
           format: uuid
-        domain:
+        domainId:
           type: string
         type:
           type: string
@@ -615,12 +640,12 @@ components:
       type: object
       required:
         - userId
-        - domain
+        - domainId
       properties:
         userId:
           type: string
           format: uuid
-        domain:
+        domainId:
           type: string
         targetSkills:
           type: array
@@ -681,7 +706,7 @@ components:
       properties:
         tempId:
           type: string
-        domain:
+        domainId:
           type: string
         type:
           type: string
@@ -769,3 +794,29 @@ components:
             $ref: '#/components/schemas/SkillState'
         suggestedNextAction:
           type: string
+
+    GenerateDiagnosticTestRequest:
+      type: object
+      required:
+        - domainId
+      properties:
+        domainId:
+          type: string
+          format: uuid
+        level:
+          type: string
+          default: BEGINNER
+        nQuestions:
+          type: integer
+          default: 5
+
+    GenerateDiagnosticTestResponse:
+      type: object
+      required:
+        - questions
+      properties:
+        questions:
+          type: array
+          items:
+            type: object
+            additionalProperties: true

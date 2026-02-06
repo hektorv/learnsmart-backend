@@ -189,11 +189,10 @@ class LLMService:
         }
 
     def _mock_item(self, domain):
-        import uuid
+        # ID logic delegated to content-service
         return {
             "item": {
-                "id": str(uuid.uuid4()), # Use unique ID for deduplication testing
-                "tempId": str(uuid.uuid4()),
+                # "id": ... removed, content-service assigns it
                 "type": "multiple_choice",
                 "stem": f"Mock question for {domain}",
                 "options": [],

@@ -42,7 +42,7 @@ def test_generate_plan_success(mock_llm_service):
         "contentCatalog": []
     }
     
-    response = client.post("/v1/plans/generate", json=request_data)
+    response = client.post("/v1/plans", json=request_data)
     assert response.status_code == 200
     data = response.json()
     assert "plan" in data
@@ -57,7 +57,7 @@ def test_generate_plan_with_injection_attempt(mock_llm_service):
         "contentCatalog": []
     }
     
-    response = client.post("/v1/plans/generate", json=request_data)
+    response = client.post("/v1/plans", json=request_data)
     assert response.status_code == 400
     assert "prohibited content" in response.json()["detail"]
 
@@ -75,7 +75,7 @@ def test_replan_success(mock_llm_service):
         "updatedSkillState": []
     }
     
-    response = client.post("/v1/plans/replan", json=request_data)
+    response = client.post("/v1/plans/adjustments", json=request_data)
     assert response.status_code == 200
     data = response.json()
     assert "changeSummary" in data
@@ -99,7 +99,7 @@ def test_next_item_success(mock_llm_service):
         "recentHistory": []
     }
     
-    response = client.post("/v1/assessments/next-item", json=request_data)
+    response = client.post("/v1/assessments/items", json=request_data)
     assert response.status_code == 200
     data = response.json()
     assert "item" in data
@@ -146,13 +146,13 @@ def test_generate_lessons_success(mock_llm_service):
     }
     
     request_data = {
-        "domain": "Python",
+        "domainId": "123e4567-e89b-12d3-a456-426614174000", # Valid UUID
         "nLessons": 1,
         "level": "beginner",
         "locale": "es-ES"
     }
     
-    response = client.post("/v1/content/generate-lessons", json=request_data)
+    response = client.post("/v1/contents/lessons", json=request_data)
     assert response.status_code == 200
     data = response.json()
     assert "lessons" in data
@@ -160,16 +160,16 @@ def test_generate_lessons_success(mock_llm_service):
     assert data["lessons"][0]["title"] == "Introduction to Python"
 
 def test_generate_lessons_with_long_domain():
-    """Test that excessively long domain names are rejected"""
+    """Test that invalid domain ID is rejected"""
     request_data = {
-        "domain": "a" * 2500,  # Exceeds MAX_TEXT_LENGTH
+        "domainId": "a" * 2500,  # Exceeds MAX_TEXT_LENGTH and regex
         "nLessons": 1,
         "locale": "es-ES"
     }
     
-    response = client.post("/v1/content/generate-lessons", json=request_data)
+    response = client.post("/v1/contents/lessons", json=request_data)
     assert response.status_code == 400
-    assert "exceeds maximum length" in response.json()["detail"]
+    assert "Invalid UUID format" in response.json()["detail"]
 
 def test_llm_service_error_handling(mock_llm_service):
     """Test that LLM service errors are handled gracefully"""
@@ -182,6 +182,54 @@ def test_llm_service_error_handling(mock_llm_service):
         "contentCatalog": []
     }
     
-    response = client.post("/v1/plans/generate", json=request_data)
+    response = client.post("/v1/plans", json=request_data)
     assert response.status_code == 500
     assert "LLM service unavailable" in response.json()["detail"]
+
+def test_generate_plan_with_invalid_domain_id(mock_llm_service):
+    """Test that invalid domainId UUIDs in goals are rejected"""
+    request_data = {
+        "userId": "user-123",
+        "profile": {"name": "Test User"},
+        "goals": [{"title": "Learn Bad Domain", "domainId": "not-a-uuid"}],
+        "contentCatalog": []
+    }
+    
+    response = client.post("/v1/plans", json=request_data)
+    assert response.status_code == 400
+    assert "Invalid UUID format" in response.json()["detail"]
+
+def test_generate_diagnostic_test_success(mock_llm_service):
+    """Test successful diagnostic test generation"""
+    mock_llm_service.generate_diagnostic_test.return_value = {
+        "questions": [
+            {
+                "stem": "Diagnostic Question 1",
+                "options": [{"text": "A", "isCorrect": True}],
+                "difficulty": 0.3
+            }
+        ]
+    }
+    
+    request_data = {
+        "domainId": "123e4567-e89b-12d3-a456-426614174000",
+        "level": "BEGINNER",
+        "nQuestions": 1
+    }
+    
+    response = client.post("/v1/assessments/diagnostic-tests", json=request_data)
+    assert response.status_code == 200
+    data = response.json()
+    assert "questions" in data
+    assert len(data["questions"]) == 1
+
+def test_generate_diagnostic_test_invalid_domain(mock_llm_service):
+    """Test diagnostic test with invalid domainId"""
+    request_data = {
+        "domainId": "not-a-uuid",
+        "level": "BEGINNER"
+    }
+    
+    response = client.post("/v1/assessments/diagnostic-tests", json=request_data)
+    assert response.status_code == 400
+    assert "Invalid UUID format" in response.json()["detail"]

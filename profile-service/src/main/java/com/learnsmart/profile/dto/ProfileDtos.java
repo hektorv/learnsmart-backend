@@ -64,7 +64,7 @@ public class ProfileDtos {
         @NotBlank
         private String title;
         private String description;
-        private String domain;
+        private UUID domainId;
         private UUID skillId; // US-093
         private String targetLevel;
         private LocalDate dueDate;
@@ -76,7 +76,7 @@ public class ProfileDtos {
     public static class UserGoalUpdateRequest {
         private String title;
         private String description;
-        private String domain;
+        private UUID domainId;
         private String targetLevel;
         private LocalDate dueDate;
         private String intensity;
@@ -93,7 +93,7 @@ public class ProfileDtos {
         private UUID userId;
         private String title;
         private String description;
-        private String domain;
+        private UUID domainId;
         private UUID skillId; // US-093
         private String targetLevel;
         private LocalDate dueDate;

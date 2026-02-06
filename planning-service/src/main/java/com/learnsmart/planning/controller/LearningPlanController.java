@@ -25,7 +25,7 @@ public class LearningPlanController {
     public ResponseEntity<ExternalDtos.GenerateDiagnosticTestResponse> generateDiagnosticTest(
             @RequestBody ExternalDtos.GenerateDiagnosticTestRequest request) {
         List<Map<String, Object>> questions = planService.generateDiagnosticTest(
-                request.getDomain(), request.getLevel(), request.getNQuestions());
+                request.getDomainId(), request.getLevel(), request.getNQuestions());
 
         return new ResponseEntity<>(new ExternalDtos.GenerateDiagnosticTestResponse(questions), HttpStatus.OK);
     }

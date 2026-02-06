@@ -62,3 +62,17 @@ class InputValidator:
             return {k: InputValidator.validate_obj(v, depth + 1) for k, v in obj.items()}
         else:
             return obj
+
+    @staticmethod
+    def validate_uuid(text: str, context: str = "uuid") -> str:
+        """
+        Validates that the string is a valid UUID.
+        """
+        if not text:
+             return text
+        
+        # Simple regex for UUID
+        uuid_regex = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', re.I)
+        if not uuid_regex.match(text):
+             raise HTTPException(status_code=400, detail=f"Invalid UUID format in {context}: {text}")
+        return text

@@ -14,6 +14,9 @@ public interface ContentServiceClient {
     @GetMapping("/domains")
     List<DomainDto> getDomains(@RequestParam("code") String code);
 
+    @GetMapping("/domains/{id}")
+    DomainDto getDomain(@PathVariable("id") UUID id);
+
     @GetMapping("/skills")
     List<SkillDto> getSkills(@RequestParam("code") String code);
 

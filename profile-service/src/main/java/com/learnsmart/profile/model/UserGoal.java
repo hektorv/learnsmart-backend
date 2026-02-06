@@ -34,7 +34,8 @@ public class UserGoal {
 
     private String description;
 
-    private String domain;
+    @Column(name = "domain_id", nullable = false)
+    private UUID domainId;
 
     @Column(name = "target_level")
     private String targetLevel;

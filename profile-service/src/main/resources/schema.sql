@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     birth_year    INT,
     locale        VARCHAR(10),
     timezone      VARCHAR(50),
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS user_goals (
@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS user_goals (
     due_date              DATE,
     intensity             VARCHAR(20),
     is_active             BOOLEAN NOT NULL DEFAULT true,
-    completed_at          TIMESTAMPTZ,
+    completed_at          TIMESTAMP WITH TIME ZONE,
     completion_percentage INTEGER DEFAULT 0,
     status                VARCHAR(20) DEFAULT 'active',
-    created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at            TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at            TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 -- US-094: Audit log table
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS user_audit_log (
     field_name   VARCHAR(100),
     old_value    TEXT,
     new_value    TEXT,
-    timestamp    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    timestamp    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     ip_address   VARCHAR(45),
     user_agent   TEXT
 );
@@ -54,15 +54,15 @@ CREATE TABLE IF NOT EXISTS badges (
     criteria_type VARCHAR(50),
     criteria_meta JSONB,
     is_active     BOOLEAN NOT NULL DEFAULT true,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS user_badges (
     id          UUID PRIMARY KEY,
     user_id     UUID NOT NULL,
     badge_id    UUID NOT NULL REFERENCES badges(id),
-    awarded_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    awarded_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     source      VARCHAR(50),
     reason      TEXT,
     metadata    JSONB,

@@ -46,7 +46,7 @@ def test_certificates():
     plan_payload = {
         "userId": user_id,
         "name": "Cert Test Plan",
-        "goalId": "cert-goal",
+        "goalId": str(uuid.uuid4()),
         "modules": [
             {"title": "Module 1", "description": "Intro", "status": "active"},
             {"title": "Module 2", "description": "Advanced", "status": "active"}

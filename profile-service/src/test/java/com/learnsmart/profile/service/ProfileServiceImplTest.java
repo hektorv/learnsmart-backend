@@ -42,6 +42,9 @@ class ProfileServiceImplTest {
     @Mock
     private AuditService auditService;
 
+    @Mock
+    private com.learnsmart.profile.client.ContentServiceClient contentClient;
+
     @InjectMocks
     private ProfileServiceImpl profileService;
 
@@ -226,7 +229,7 @@ class ProfileServiceImplTest {
         UserGoalUpdateRequest request = UserGoalUpdateRequest.builder()
                 .title("New")
                 .description("Desc")
-                .domain("IT")
+                .domainId(UUID.randomUUID())
                 .targetLevel("HIGH")
                 .dueDate(LocalDate.now())
                 .intensity("HIGH")
@@ -234,6 +237,9 @@ class ProfileServiceImplTest {
                 .build();
 
         when(goalRepository.findById(goalId)).thenReturn(Optional.of(goal));
+        // Mock Content Client
+        when(contentClient.getDomain(any()))
+                .thenReturn(new com.learnsmart.profile.client.ContentServiceClient.DomainDto());
         when(goalRepository.save(any(UserGoal.class))).thenAnswer(i -> i.getArgument(0));
 
         UserGoalResponse response = profileService.updateGoal(userId, goalId, request);

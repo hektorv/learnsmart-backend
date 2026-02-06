@@ -7,8 +7,14 @@ import os
 # Add app to path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-# Mock OpenAI before importing LLMService
-sys.modules['openai'] = MagicMock()
+# 1. Mock OpenAI module BEFORE importing app.services.llm_service
+# We need to ensure 'OpenAI' and 'OpenAIError' are available
+mock_openai_module = MagicMock()
+# Define a real exception class for OpenAIError so pytest.raises works
+class MockOpenAIError(Exception):
+    pass
+mock_openai_module.OpenAIError = MockOpenAIError
+sys.modules['openai'] = mock_openai_module
 
 from app.services.llm_service import LLMService
 
@@ -30,27 +36,44 @@ def mock_openai_client():
 @pytest.fixture
 def llm_service_with_mock(mock_openai_client):
     """Create LLMService with mocked OpenAI client"""
-    with patch('app.services.llm_service.OpenAI') as mock_openai:
-        mock_openai.return_value = mock_openai_client
-        service = LLMService()
-        service.client = mock_openai_client
-        yield service
+    # We mock 'app.services.llm_service.OpenAI' to return our mock client class/instance
+    with patch('app.services.llm_service.OpenAI') as mock_openai_class:
+        mock_openai_class.return_value = mock_openai_client
+        
+        # Also need to ensure settings don't force mock mode during init for this fixture
+        with patch('app.services.llm_service.settings') as mock_settings:
+            mock_settings.OPENAI_API_KEY = "test-fixture-key"
+            mock_settings.OPENAI_MODEL = "gpt-4"
+            mock_settings.USE_MOCK_AI = False
+            mock_settings.ENVIRONMENT = "production"
+            
+            service = LLMService()
+            # Explicitly set client to be safe, though init should have done it
+            service.client = mock_openai_client
+            service.api_key = "test-fixture-key" 
+            yield service
 
 def test_llm_service_initialization_with_api_key():
     """Test LLMService initializes with API key"""
-    with patch('app.core.config.settings') as mock_settings:
+    # Patch settings at the source where they are imported in llm_service.py
+    with patch('app.services.llm_service.settings') as mock_settings:
         mock_settings.OPENAI_API_KEY = "test-key"
         mock_settings.OPENAI_MODEL = "gpt-4"
-        with patch('app.services.llm_service.OpenAI'):
+        mock_settings.USE_MOCK_AI = False
+        mock_settings.ENVIRONMENT = "production"
+        
+        with patch('app.services.llm_service.OpenAI') as mock_openai:
             service = LLMService()
             assert service.api_key == "test-key"
-            assert service.model == "gpt-4"
+            assert service.client is not None # Assuming this calls OpenAI()
 
 def test_llm_service_initialization_without_api_key():
     """Test LLMService initializes in mock mode without API key"""
-    with patch('app.core.config.settings') as mock_settings:
+    with patch('app.services.llm_service.settings') as mock_settings:
         mock_settings.OPENAI_API_KEY = None
         mock_settings.OPENAI_MODEL = "gpt-4"
+        mock_settings.USE_MOCK_AI = False
+        
         service = LLMService()
         assert service.client is None
 
@@ -220,6 +243,7 @@ def test_call_llm_json_decode_error(llm_service_with_mock, mock_openai_client):
 
 def test_call_llm_openai_error(llm_service_with_mock, mock_openai_client):
     """Test that OpenAI errors are propagated"""
+    # Use the mocked exception class we defined
     from openai import OpenAIError
     mock_openai_client.chat.completions.create.side_effect = OpenAIError("API Error")
     

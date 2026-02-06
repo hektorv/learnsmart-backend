@@ -144,7 +144,7 @@ public class ProfileServiceImpl {
                 .userId(userId)
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .domain(request.getDomain())
+                .domainId(request.getDomainId())
                 .skillId(request.getSkillId()) // US-093
                 .targetLevel(request.getTargetLevel())
                 .dueDate(request.getDueDate())
@@ -153,11 +153,13 @@ public class ProfileServiceImpl {
                 .build();
 
         // US-093: Validate Domain and Skill
-        if (request.getDomain() != null && !request.getDomain().isEmpty()) {
+        // US-093: Validate Domain and Skill
+        if (request.getDomainId() != null) {
             try {
-                var domains = contentClient.getDomains(request.getDomain());
-                if (domains == null || domains.isEmpty()) {
-                    throw new IllegalArgumentException("Domain not found: " + request.getDomain());
+                // US-10-01: Use ID-based validation
+                var domain = contentClient.getDomain(request.getDomainId());
+                if (domain == null) {
+                    throw new IllegalArgumentException("Domain not found: " + request.getDomainId());
                 }
             } catch (Exception e) {
                 // If not found (404) or other error, treat as validation failure for Strict
@@ -166,9 +168,9 @@ public class ProfileServiceImpl {
                     throw e;
                 // Log the real error for debugging
                 System.err.println("Domain validation failed: " + e.getMessage());
-                e.printStackTrace();
+                // e.printStackTrace();
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Invalid domain: " + request.getDomain() + " (Catalog service check failed: " + e.getMessage()
+                        "Invalid domain: " + request.getDomainId() + " (Catalog service check failed: " + e.getMessage()
                                 + ")");
             }
         }
@@ -181,10 +183,10 @@ public class ProfileServiceImpl {
                     throw new IllegalArgumentException("Skill not found: " + request.getSkillId());
                 }
                 // Optional: Check if skill belongs to domain if both provided
-                if (request.getDomain() != null && skill.getDomain() != null
-                        && !request.getDomain().equals(skill.getDomain().getCode())) {
+                if (request.getDomainId() != null && skill.getDomain() != null
+                        && !request.getDomainId().equals(skill.getDomain().getId())) {
                     throw new IllegalArgumentException(
-                            "Skill '" + skill.getCode() + "' does not belong to domain '" + request.getDomain() + "'");
+                            "Skill '" + skill.getCode() + "' does not belong to domain " + request.getDomainId());
                 }
             } catch (Exception e) {
                 if (e instanceof ResponseStatusException)
@@ -220,19 +222,19 @@ public class ProfileServiceImpl {
             oldGoal.setTitle(request.getTitle());
         if (request.getDescription() != null)
             oldGoal.setDescription(request.getDescription());
-        if (request.getDomain() != null) {
+        if (request.getDomainId() != null) {
             // US-093 Validation on Update
             try {
-                var domains = contentClient.getDomains(request.getDomain());
-                if (domains == null || domains.isEmpty()) {
-                    throw new IllegalArgumentException("Domain not found: " + request.getDomain());
+                var domain = contentClient.getDomain(request.getDomainId());
+                if (domain == null) {
+                    throw new IllegalArgumentException("Domain not found: " + request.getDomainId());
                 }
             } catch (Exception e) {
                 if (e instanceof ResponseStatusException)
                     throw e;
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid domain: " + request.getDomain());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid domain: " + request.getDomainId());
             }
-            oldGoal.setDomain(request.getDomain());
+            oldGoal.setDomainId(request.getDomainId());
         }
         if (request.getTargetLevel() != null)
             oldGoal.setTargetLevel(request.getTargetLevel());
@@ -350,7 +352,7 @@ public class ProfileServiceImpl {
                 .userId(goal.getUserId())
                 .title(goal.getTitle())
                 .description(goal.getDescription())
-                .domain(goal.getDomain())
+                .domainId(goal.getDomainId())
                 .skillId(goal.getSkillId()) // US-093
                 .targetLevel(goal.getTargetLevel())
                 .dueDate(goal.getDueDate())
@@ -441,7 +443,7 @@ public class ProfileServiceImpl {
                 .userId(g.getUserId())
                 .title(g.getTitle())
                 .description(g.getDescription())
-                .domain(g.getDomain())
+                .domainId(g.getDomainId())
                 .skillId(g.getSkillId()) // US-093
                 .targetLevel(g.getTargetLevel())
                 .dueDate(g.getDueDate())

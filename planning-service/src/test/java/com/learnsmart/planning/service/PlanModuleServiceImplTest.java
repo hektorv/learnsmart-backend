@@ -24,6 +24,9 @@ class PlanModuleServiceImplTest {
     @Mock
     private PlanModuleRepository moduleRepository;
 
+    @Mock
+    private LearningPlanService planService;
+
     @InjectMocks
     private PlanModuleServiceImpl moduleService;
 

@@ -167,3 +167,28 @@ KEYCLOAK_ADMIN_PASSWORD=strongpassword123
 KC_HOSTNAME=${{RAILWAY_PUBLIC_DOMAIN}}
 KC_PROXY=edge
 ```
+
+---
+
+## 🛠 Troubleshooting & Critical Networking Fixes (TFM "Gold Mine")
+
+### The "Eureka Connectivity" Problem (Gateway 500)
+If your Gateway returns `500` or `Connection Timeout` when calling microservices, but Auth works fine, the issue is **Railway Internal Networking**.
+
+1.  **The Problem**: By default, Eureka registers services using their **Container IP** (`10.x.x.x`). In Railway's distributed architecture, these IPs are often not reachable between different deployments (Network Isolation).
+2.  **The Symptoms**:
+    *   Eureka shows services as UP.
+    *   Gateway logs error: `io.netty.channel.ConnectTimeoutException: ... 10.x.y.z:808X`.
+3.  **The Solution**: Force services to register using their **Private DNS Hostname** (`.railway.internal`), which Railway's internal DNS always resolves correctly.
+
+**Required Variables for ALL Microservices:**
+| Variable | Value | Explanation |
+| :--- | :--- | :--- |
+| `EUREKA_INSTANCE_PREFER_IP_ADDRESS` | `false` | Stop using raw IPs. |
+| `EUREKA_INSTANCE_HOSTNAME` | `${{RAILWAY_PRIVATE_DOMAIN}}` | Use the internal DNS name provided by Railway. |
+| `EUREKA_INSTANCE_NON_SECURE_PORT` | `${PORT}` | Explicitly register the correct port. |
+
+### Case Sensitivity in Variables
+Railway variables like `${{ServiceName.VAR}}` are **Case Sensitive**.
+*   If service is named `Keycloak`, `${{keycloak.VAR}}` will fail (resolves to empty string).
+*   Always match the service name exactly as shown in the Dashboard.

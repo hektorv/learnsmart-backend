@@ -323,7 +323,7 @@ public class LearningPlanServiceImpl implements LearningPlanService {
     @Override
     public List<Map<String, Object>> generateDiagnosticTest(String domain, String level, int nQuestions) {
         ExternalDtos.GenerateDiagnosticTestRequest request = ExternalDtos.GenerateDiagnosticTestRequest.builder()
-                .domain(domain)
+                .domainId(domain)
                 .level(level)
                 .nQuestions(nQuestions)
                 .build();

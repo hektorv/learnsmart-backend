@@ -77,7 +77,7 @@ class ProfileServiceIntegrationTests {
                 UserGoalCreateRequest goalRequest = UserGoalCreateRequest.builder()
                                 .title("Learn Spring Boot")
                                 .description("Master Microservices")
-                                .domain("IT")
+                                .domainId(UUID.randomUUID())
                                 .intensity("standard")
                                 .dueDate(LocalDate.now().plusMonths(3))
                                 .build();

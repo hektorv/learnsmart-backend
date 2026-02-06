@@ -337,9 +337,10 @@ components:
           type: string
         description:
           type: string
-        domain:
+        domainId:
           type: string
-          example: math
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
         targetLevel:
           type: string
           example: B2
@@ -367,8 +368,9 @@ components:
           type: string
         description:
           type: string
-        domain:
+        domainId:
           type: string
+          format: uuid
         targetLevel:
           type: string
         dueDate:
@@ -385,8 +387,9 @@ components:
           type: string
         description:
           type: string
-        domain:
+        domainId:
           type: string
+          format: uuid
         targetLevel:
           type: string
         dueDate:

@@ -79,7 +79,7 @@ class FeedbackResponse(BaseModel):
     remediationSuggestions: List[str] = []
 
 class GenerateDiagnosticTestRequest(BaseModel):
-    domain: str
+    domainId: str
     level: str = "BEGINNER"
     nQuestions: int = 5
 
@@ -100,6 +100,11 @@ def generate_plan(request: GeneratePlanRequest):
         val_profile = InputValidator.validate_obj(request.profile)
         val_goals = InputValidator.validate_obj(request.goals)
         val_catalog = InputValidator.validate_obj(request.contentCatalog)
+
+        # US-10-01: Validate domainId UUIDs if present
+        for goal in val_goals:
+            if "domainId" in goal:
+                InputValidator.validate_uuid(goal["domainId"], "goal.domainId")
 
         result = llm_service.generate_plan(
             user_profile=val_profile,
@@ -206,7 +211,7 @@ def feedback(request: FeedbackRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 class GenerateDiagnosticTestRequest(BaseModel):
-    domain: str
+    domainId: str
     level: str = "BEGINNER"
     nQuestions: int = 5
 
@@ -216,9 +221,11 @@ class GenerateDiagnosticTestResponse(BaseModel):
 @app.post("/v1/assessments/diagnostic-tests", response_model=GenerateDiagnosticTestResponse)
 def generate_diagnostic_test(request: GenerateDiagnosticTestRequest):
     try:
-        val_domain = InputValidator.validate_text(request.domain)
+        InputValidator.validate_uuid(request.domainId)
+        InputValidator.validate_text(request.level)
+
         result = llm_service.generate_diagnostic_test(
-            domain=val_domain,
+            domain=request.domainId,
             level=request.level,
             n_questions=request.nQuestions
         )
@@ -229,7 +236,7 @@ def generate_diagnostic_test(request: GenerateDiagnosticTestRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 class GenerateContentRequest(BaseModel):
-    domain: str # Code or Name
+    domainId: str
     skillIds: Optional[List[str]] = None
     nLessons: int = 3
     level: str = "beginner"
@@ -242,11 +249,11 @@ class GenerateContentResponse(BaseModel):
 @app.post("/v1/contents/lessons", response_model=GenerateContentResponse)
 def generate_lessons(request: GenerateContentRequest):
     try:
-        val_domain = InputValidator.validate_text(request.domain)
+        val_domain_id = InputValidator.validate_uuid(request.domainId, "domainId")
         val_locale = InputValidator.validate_text(request.locale)
 
         result = llm_service.generate_lessons(
-            domain=val_domain,
+            domain=val_domain_id,
             n_lessons=request.nLessons,
             locale=val_locale
         )
@@ -257,7 +264,7 @@ def generate_lessons(request: GenerateContentRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 class GenerateAssessmentItemsRequest(BaseModel):
-    domain: str
+    domainId: str
     skillIds: Optional[List[str]] = None
     nItems: int = 5
     itemType: str = "multiple_choice"
@@ -270,7 +277,7 @@ class GenerateAssessmentItemsResponse(BaseModel):
 @app.post("/v1/contents/assessment-items", response_model=GenerateAssessmentItemsResponse)
 def generate_assessment_items(request: GenerateAssessmentItemsRequest):
     try:
-        val_domain = InputValidator.validate_text(request.domain)
+        val_domain_id = InputValidator.validate_uuid(request.domainId, "domainId")
         
         # MOCK IMPLEMENTATION (Should call llm_service)
         # Assuming llm_service has a method or using generic mock for now
@@ -285,10 +292,10 @@ def generate_assessment_items(request: GenerateAssessmentItemsRequest):
         items = []
         for i in range(request.nItems):
             items.append({
-                "tempId": str(uuid.uuid4()),
-                "domain": request.domain,
+                # tempId removed as ID should come from content-service
+                "domainId": request.domainId,
                 "type": request.itemType,
-                "stem": f"Generated question {i+1} for {request.domain}",
+                "stem": f"Generated question {i+1} for domain {request.domainId}",
                 "options": [
                     {"optionId": "a", "statement": "Option A (Correct)", "isCorrect": True},
                     {"optionId": "b", "statement": "Option B", "isCorrect": False}

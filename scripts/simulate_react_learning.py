@@ -236,19 +236,19 @@ def run_simulation(simulation_id=None):
     print("    - Negative Test 1: Invalid Domain")
     res = student.post("/profiles/me/goals", {
         "title": "Invalid Goal",
-        "domain": "invalid-domain-123",
+        "domainId": str(uuid.uuid4()), # Valid UUID but non-existent domain
         "targetLevel": "INTERMEDIATE"
     })
     if res is None:
-        print("      ✅ Passed: Rejected invalid domain (as expected)")
+        print("      ✅ Passed: Rejected non-existent domainId (as expected)")
     else:
-        print("      ❌ Failed: Should have rejected invalid domain")
+        print("      ❌ Failed: Should have rejected non-existent domainId")
 
     # Negative Test 2: Invalid Skill ID
     print("    - Negative Test 2: Invalid Skill ID")
     res = student.post("/profiles/me/goals", {
         "title": "Invalid Skill Goal",
-        "domain": "react-dev",
+        "domainId": domain_id,
         "skillId": str(uuid.uuid4()), # Random UUID
         "targetLevel": "INTERMEDIATE"
     })
@@ -262,7 +262,7 @@ def run_simulation(simulation_id=None):
     goal = student.post("/profiles/me/goals", {
         "title": "Master React Development",
         "description": "Become proficient in React",
-        "domain": "react-dev",
+        "domainId": domain_id,
         "skillId": react_id, # Link to actual skill
         "targetLevel": "INTERMEDIATE",
         "targetDate": "2026-06-01"
@@ -280,7 +280,7 @@ def run_simulation(simulation_id=None):
     # ==========================================
     print("\n--- 5. DIAGNOSTIC TEST (Sprint 5.1) ---")
     diagnostic = student.post("/planning/plans/diagnostics", {
-        "domain": "react-dev",
+        "domainId": domain_id,
         "level": "JUNIOR",
         "nQuestions": 1
     })
@@ -570,6 +570,7 @@ def run_simulation(simulation_id=None):
     print("  ✓ US-096: Goal Completion Tracking")
     print("  ✓ US-123: Event Payload Validation")
     print("  ✓ US-111: Skill Prerequisite Validation")
+    print("  ✓ US-10-01: Domain Referential Integrity (UUIDs)")
 
 if __name__ == "__main__":
     run_simulation()

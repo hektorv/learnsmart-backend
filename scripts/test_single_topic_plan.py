@@ -98,7 +98,7 @@ def run_simulation():
     print("\n--- CREATING SINGLE MODULE PLAN ---")
     plan_payload = {
         "userId": student.user_id,
-        "goalId": "quick-learn",
+        "goalId": str(uuid.uuid4()),
         "name": "One Topic Plan",
         "modules": [
             {"title": "Just One Thing", "description": "Quick check", "estimatedHours": 1, "position": 1, "status": "pending"}

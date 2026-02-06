@@ -1,1645 +1,2392 @@
 {
-    "info": {
-        "_postman_id": "learnsmart-backend-api-v1",
-        "name": "LearnSmart Backend API",
-        "description": "Comprehensive collection for the LearnSmart platform backend microservices. Based on verification scripts.",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  "info": {
+    "_postman_id": "ff955095-f677-4304-89e4-82c864c2caf6",
+    "name": "LearnSmart Backend API",
+    "description": "Comprehensive collection for the LearnSmart platform backend microservices. Based on verification scripts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "17037175"
+  },
+  "item": [
+    {
+      "name": "Auth (Keycloak)",
+      "item": [
+        {
+          "name": "Get Token (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"access_token\", jsonData.access_token);",
+                  "pm.environment.set(\"refresh_token\", jsonData.refresh_token);",
+                  "console.log(\"Token set: \" + jsonData.access_token.substr(0, 10) + \"...\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "{{admin_user}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{admin_pass}}",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     },
-    "item": [
+    {
+      "name": "Keycloak Config (Admin)",
+      "item": [
         {
-            "name": "Auth (Keycloak)",
-            "item": [
+          "name": "1. Get Master Admin Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"master_token\", jsonData.access_token);",
+                  "console.log(\"Master Token set\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
                 {
-                    "name": "Get Token (Admin)",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();",
-                                    "pm.environment.set(\"access_token\", jsonData.access_token);",
-                                    "pm.environment.set(\"refresh_token\", jsonData.refresh_token);",
-                                    "console.log(\"Token set: \" + jsonData.access_token.substr(0, 10) + \"...\");"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "urlencoded",
-                            "urlencoded": [
-                                {
-                                    "key": "client_id",
-                                    "value": "{{client_id}}",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "username",
-                                    "value": "{{admin_user}}",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "password",
-                                    "value": "{{admin_pass}}",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "grant_type",
-                                    "value": "password",
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "url": {
-                            "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
-                            "host": [
-                                "{{keycloak_url}}"
-                            ],
-                            "path": [
-                                "realms",
-                                "{{realm}}",
-                                "protocol",
-                                "openid-connect",
-                                "token"
-                            ]
-                        }
-                    }
+                  "key": "username",
+                  "value": "admin",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{keycloak-admin-password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "admin-cli",
+                  "type": "text"
                 }
-            ]
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/master/protocol/openid-connect/token",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "realms",
+                "master",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "Keycloak Config (Admin)",
-            "item": [
-                {
-                    "name": "1. Get Master Admin Token",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();",
-                                    "pm.environment.set(\"master_token\", jsonData.access_token);",
-                                    "console.log(\"Master Token set\");"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/x-www-form-urlencoded"
-                            }
-                        ],
-                        "body": {
-                            "mode": "urlencoded",
-                            "urlencoded": [
-                                {
-                                    "key": "username",
-                                    "value": "admin",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "password",
-                                    "value": "admin",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "grant_type",
-                                    "value": "password",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "client_id",
-                                    "value": "admin-cli",
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "url": "{{keycloak_url}}/realms/master/protocol/openid-connect/token"
-                    }
-                },
-                {
-                    "name": "2. Create Realm",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{master_token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\"realm\": \"{{realm}}\", \"enabled\": true}"
-                        },
-                        "url": "{{keycloak_url}}/admin/realms"
-                    }
-                },
-                {
-                    "name": "3. Create Client",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{master_token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"clientId\": \"{{client_id}}\",\n  \"enabled\": true,\n  \"publicClient\": true,\n  \"directAccessGrantsEnabled\": true,\n  \"standardFlowEnabled\": true,\n  \"redirectUris\": [\"*\"],\n  \"webOrigins\": [\"*\"]\n}"
-                        },
-                        "url": "{{keycloak_url}}/admin/realms/{{realm}}/clients"
-                    }
-                },
-                {
-                    "name": "4. Create Admin User",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{master_token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"enabled\": true,\n  \"credentials\": [{\"type\": \"password\", \"value\": \"{{admin_pass}}\", \"temporary\": false}]\n}"
-                        },
-                        "url": "{{keycloak_url}}/admin/realms/{{realm}}/users"
-                    }
-                },
-                {
-                    "name": "5. Get User ID (for Role)",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();",
-                                    "if(jsonData.length > 0) {",
-                                    "    pm.environment.set(\"admin_uid\", jsonData[0].id);",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{master_token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users?username={{admin_user}}",
-                            "host": [
-                                "{{keycloak_url}}"
-                            ],
-                            "path": [
-                                "admin",
-                                "realms",
-                                "{{realm}}",
-                                "users"
-                            ],
-                            "query": [
-                                {
-                                    "key": "username",
-                                    "value": "{{admin_user}}"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "6. Create ADMIN Role",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{master_token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\"name\": \"ADMIN\"}"
-                        },
-                        "url": "{{keycloak_url}}/admin/realms/{{realm}}/roles"
-                    }
-                },
-                {
-                    "name": "7. Get Role ID",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();",
-                                    "if(jsonData.id) {",
-                                    "    pm.environment.set(\"role_id\", jsonData.id);",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{master_token}}"
-                            }
-                        ],
-                        "url": "{{keycloak_url}}/admin/realms/{{realm}}/roles/ADMIN"
-                    }
-                },
-                {
-                    "name": "8. Assign Role to User",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{master_token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "[{\"id\": \"{{role_id}}\", \"name\": \"ADMIN\"}]"
-                        },
-                        "url": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{admin_uid}}/role-mappings/realm"
-                    }
-                }
-            ]
+          "name": "2. Create Realm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{master_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"realm\": \"{{realm}}\", \"enabled\": true}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "admin",
+                "realms"
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "Content Service",
-            "item": [
-                {
-                    "name": "Domains",
-                    "item": [
-                        {
-                            "name": "Get All Domains",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/content/domains"
-                            }
-                        },
-                        {
-                            "name": "Get Domain by ID",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/content/domains/{{domain_id}}"
-                            }
-                        },
-                        {
-                            "name": "Create Domain",
-                            "event": [
-                                {
-                                    "listen": "test",
-                                    "script": {
-                                        "exec": [
-                                            "var jsonData = pm.response.json();",
-                                            "if(jsonData.id) {",
-                                            "    pm.environment.set(\"domain_id\", jsonData.id);",
-                                            "}"
-                                        ],
-                                        "type": "text/javascript"
-                                    }
-                                }
-                            ],
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"code\": \"REACT_DEV\",\n  \"name\": \"React Development\",\n  \"description\": \"Master React\"\n}"
-                                },
-                                "url": "{{gateway_url}}/content/domains"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "Skills",
-                    "item": [
-                        {
-                            "name": "Get Skills (Filter by Code)",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{gateway_url}}/content/skills?code=react-basics",
-                                    "host": [
-                                        "{{gateway_url}}"
-                                    ],
-                                    "path": [
-                                        "content",
-                                        "skills"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "code",
-                                            "value": "react-basics"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "name": "Get Skill by ID",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/content/skills/{{skill_id}}"
-                            }
-                        },
-                        {
-                            "name": "Create Skill",
-                            "event": [
-                                {
-                                    "listen": "test",
-                                    "script": {
-                                        "exec": [
-                                            "var jsonData = pm.response.json();",
-                                            "if(jsonData.id) {",
-                                            "    pm.environment.set(\"skill_id\", jsonData.id);",
-                                            "}"
-                                        ],
-                                        "type": "text/javascript"
-                                    }
-                                }
-                            ],
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"code\": \"react-basics\",\n  \"name\": \"React Basics\",\n  \"description\": \"Core concepts\",\n  \"level\": \"BEGINNER\"\n}"
-                                },
-                                "url": "{{gateway_url}}/content/skills"
-                            }
-                        },
-                        {
-                            "name": "Update Skill",
-                            "request": {
-                                "method": "PUT",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"name\": \"React Basics Updated\",\n  \"description\": \"Updated Description\",\n  \"level\": \"BEGINNER\",\n  \"tags\": [\"frontend\", \"js\"]\n}"
-                                },
-                                "url": "{{gateway_url}}/content/skills/{{skill_id}}"
-                            }
-                        },
-                        {
-                            "name": "Get Prerequisites",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/content/skills/{{skill_id}}/prerequisites"
-                            }
-                        },
-                        {
-                            "name": "Set Prerequisites",
-                            "request": {
-                                "method": "PUT",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "[\"{{other_skill_id}}\"]"
-                                },
-                                "url": "{{gateway_url}}/content/skills/{{skill_id}}/prerequisites"
-                            }
-                        },
-                        {
-                            "name": "Delete Skill",
-                            "request": {
-                                "method": "DELETE",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/content/skills/{{skill_id}}"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "Content Items",
-                    "item": [
-                        {
-                            "name": "Get All Content Items",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/content/content-items"
-                            }
-                        },
-                        {
-                            "name": "Get Content Item by ID",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/content/content-items/{{content_id}}"
-                            }
-                        },
-                        {
-                            "name": "Create Content Item",
-                            "event": [
-                                {
-                                    "listen": "test",
-                                    "script": {
-                                        "exec": [
-                                            "var jsonData = pm.response.json();",
-                                            "if(jsonData.id) {",
-                                            "    pm.environment.set(\"content_id\", jsonData.id);",
-                                            "}"
-                                        ],
-                                        "type": "text/javascript"
-                                    }
-                                }
-                            ],
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"type\": \"TEXT\",\n  \"title\": \"Intro to React\",\n  \"description\": \"Basic intro\",\n  \"estimatedMinutes\": 15,\n  \"difficulty\": \"BEGINNER\",\n  \"active\": true\n}"
-                                },
-                                "url": "{{gateway_url}}/content/content-items"
-                            }
-                        },
-                        {
-                            "name": "Generate Content (AI)",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"topic\": \"Advanced Hooks\",\n  \"nLessons\": 2\n}"
-                                },
-                                "url": "{{gateway_url}}/content/content-items/generate"
-                            }
-                        },
-                        {
-                            "name": "Link Skills to Content",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "[{\"skillId\": \"{{skill_id}}\", \"weight\": 1.0}]"
-                                },
-                                "url": "{{gateway_url}}/content/content-items/{{content_id}}/skills"
-                            }
-                        },
-                        {
-                            "name": "Update Content Item",
-                            "request": {
-                                "method": "PUT",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"title\": \"Intro to React (Revised)\",\n  \"type\": \"TEXT\",\n  \"active\": true\n}"
-                                },
-                                "url": "{{gateway_url}}/content/content-items/{{content_id}}"
-                            }
-                        },
-                        {
-                            "name": "Delete Content Item",
-                            "request": {
-                                "method": "DELETE",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/content/content-items/{{content_id}}"
-                            }
-                        }
-                    ]
-                }
-            ]
+          "name": "3. Create Client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{master_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"{{client_id}}\",\n  \"enabled\": true,\n  \"publicClient\": true,\n  \"directAccessGrantsEnabled\": true,\n  \"standardFlowEnabled\": true,\n  \"redirectUris\": [\"*\"],\n  \"webOrigins\": [\"*\"]\n}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/clients",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{realm}}",
+                "clients"
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "Profile Service",
-            "item": [
-                {
-                    "name": "Auth",
-                    "item": [
-                        {
-                            "name": "Register User",
-                            "event": [
-                                {
-                                    "listen": "test",
-                                    "script": {
-                                        "exec": [
-                                            "var jsonData = pm.response.json();",
-                                            "if(jsonData.userId) {",
-                                            "    pm.environment.set(\"user_id\", jsonData.userId);",
-                                            "}"
-                                        ],
-                                        "type": "text/javascript"
-                                    }
-                                }
-                            ],
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"email\": \"user@example.com\",\n  \"username\": \"testuser\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\"\n}"
-                                },
-                                "url": "{{gateway_url}}/auth/register"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "My Profile",
-                    "item": [
-                        {
-                            "name": "Get My Profile",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/me"
-                            }
-                        },
-                        {
-                            "name": "Update My Profile",
-                            "request": {
-                                "method": "PUT",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\"\n}"
-                                },
-                                "url": "{{gateway_url}}/profiles/me"
-                            }
-                        },
-                        {
-                            "name": "Get My Progress",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/me/progress"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "Goals",
-                    "item": [
-                        {
-                            "name": "Get My Goals",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/me/goals"
-                            }
-                        },
-                        {
-                            "name": "Create Goal (US-093 Validation)",
-                            "event": [
-                                {
-                                    "listen": "test",
-                                    "script": {
-                                        "exec": [
-                                            "var jsonData = pm.response.json();",
-                                            "if(jsonData.id) {",
-                                            "    pm.environment.set(\"goal_id\", jsonData.id);",
-                                            "}"
-                                        ],
-                                        "type": "text/javascript"
-                                    }
-                                }
-                            ],
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"title\": \"Master React\",\n  \"description\": \"From validation\",\n  \"domain\": \"react-dev\",\n  \"targetLevel\": \"INTERMEDIATE\",\n  \"targetDate\": \"2026-12-31\"\n}"
-                                },
-                                "url": "{{gateway_url}}/profiles/me/goals"
-                            }
-                        },
-                        {
-                            "name": "Update Goal",
-                            "request": {
-                                "method": "PUT",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"title\": \"Master React (Updated)\",\n  \"targetDate\": \"2027-01-01\"\n}"
-                                },
-                                "url": "{{gateway_url}}/profiles/me/goals/{{goal_id}}"
-                            }
-                        },
-                        {
-                            "name": "Patch Goal (US-096)",
-                            "request": {
-                                "method": "PATCH",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
-                                },
-                                "url": "{{gateway_url}}/profiles/me/goals/{{goal_id}}"
-                            }
-                        },
-                        {
-                            "name": "Update Goal Progress (US-096)",
-                            "request": {
-                                "method": "PATCH",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"percentage\": 50\n}"
-                                },
-                                "url": "{{gateway_url}}/profiles/me/goals/{{goal_id}}/progress"
-                            }
-                        },
-                        {
-                            "name": "Complete Goal (US-096)",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/me/goals/{{goal_id}}/complete"
-                            }
-                        },
-                        {
-                            "name": "Delete Goal",
-                            "request": {
-                                "method": "DELETE",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/me/goals/{{goal_id}}"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "Preferences",
-                    "item": [
-                        {
-                            "name": "Get Preferences",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/me/preferences"
-                            }
-                        },
-                        {
-                            "name": "Update Preferences",
-                            "request": {
-                                "method": "PUT",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"hoursPerWeek\": 10.0,\n  \"preferredDays\": [\"SATURDAY\"],\n  \"notificationsEnabled\": true\n}"
-                                },
-                                "url": "{{gateway_url}}/profiles/me/preferences"
-                            }
-                        },
-                        {
-                            "name": "Get Preferences Audit Trail",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/{{user_id}}/preferences/audit"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "Audit",
-                    "item": [
-                        {
-                            "name": "Get My Audit Logs (US-094)",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/me/audit-logs"
-                            }
-                        },
-                        {
-                            "name": "Get User Audit Trail (Admin)",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/profiles/{{user_id}}/audit"
-                            }
-                        }
-                    ]
-                }
-            ]
+          "name": "4. Create Admin User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{master_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"enabled\": true,\n  \"credentials\": [{\"type\": \"password\", \"value\": \"{{admin_pass}}\", \"temporary\": false}]\n}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{realm}}",
+                "users"
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "Planning Service",
-            "item": [
+          "name": "5. Get User ID (for Role)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if(jsonData.length > 0) {",
+                  "    pm.environment.set(\"admin_uid\", jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{master_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users?username={{admin_user}}",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{realm}}",
+                "users"
+              ],
+              "query": [
                 {
-                    "name": "Plans",
-                    "item": [
-                        {
-                            "name": "Create Plan (US-111 Validation)",
-                            "event": [
-                                {
-                                    "listen": "test",
-                                    "script": {
-                                        "exec": [
-                                            "var jsonData = pm.response.json();",
-                                            "if(jsonData.id) {",
-                                            "    pm.environment.set(\"plan_id\", jsonData.id);",
-                                            "}"
-                                        ],
-                                        "type": "text/javascript"
-                                    }
-                                }
-                            ],
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"goalId\": \"{{goal_id}}\",\n  \"name\": \"React Mastery\",\n  \"modules\": [\n    {\n      \"title\": \"React Basics\",\n      \"estimatedHours\": 5,\n      \"position\": 1,\n      \"status\": \"pending\"\n    }\n  ]\n}"
-                                },
-                                "url": "{{gateway_url}}/planning/plans"
-                            }
-                        },
-                        {
-                            "name": "Get Plan by ID",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/planning/plans/{{plan_id}}"
-                            }
-                        },
-                        {
-                            "name": "Get All Plans",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{gateway_url}}/planning/plans?userId={{user_id}}",
-                                    "host": [
-                                        "{{gateway_url}}"
-                                    ],
-                                    "path": [
-                                        "planning",
-                                        "plans"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "userId",
-                                            "value": "{{user_id}}"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "name": "Update Plan",
-                            "request": {
-                                "method": "PATCH",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"status\": \"completed\"\n}"
-                                },
-                                "url": "{{gateway_url}}/planning/plans/{{plan_id}}"
-                            }
-                        },
-                        {
-                            "name": "Replan (US-107)",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{gateway_url}}/planning/plans/{{plan_id}}/replan?reason=falling_behind",
-                                    "host": [
-                                        "{{gateway_url}}"
-                                    ],
-                                    "path": [
-                                        "planning",
-                                        "plans",
-                                        "{{plan_id}}",
-                                        "replan"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "reason",
-                                            "value": "falling_behind"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "name": "Get Replan Triggers",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/planning/plans/{{plan_id}}/replan-triggers"
-                            }
-                        },
-                        {
-                            "name": "Get Certificates",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{gateway_url}}/planning/plans/certificates?userId={{user_id}}",
-                                    "host": [
-                                        "{{gateway_url}}"
-                                    ],
-                                    "path": [
-                                        "planning",
-                                        "plans",
-                                        "certificates"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "userId",
-                                            "value": "{{user_id}}"
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "name": "Generate Diagnostic Test",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"domain\": \"react-dev\",\n  \"level\": \"BEGINNER\",\n  \"nQuestions\": 5\n}"
-                                },
-                                "url": "{{gateway_url}}/planning/plans/diagnostics"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "Modules & Activities",
-                    "item": [
-                        {
-                            "name": "Get Plan Modules",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/planning/plans/{{plan_id}}/modules"
-                            }
-                        },
-                        {
-                            "name": "Update Module Status",
-                            "request": {
-                                "method": "PATCH",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"status\": \"in_progress\"\n}"
-                                },
-                                "url": "{{gateway_url}}/planning/plans/{{plan_id}}/modules/{{module_id}}"
-                            }
-                        },
-                        {
-                            "name": "Create Activity",
-                            "event": [
-                                {
-                                    "listen": "test",
-                                    "script": {
-                                        "exec": [
-                                            "var jsonData = pm.response.json();",
-                                            "if(jsonData.id) {",
-                                            "    pm.environment.set(\"activity_id\", jsonData.id);",
-                                            "}"
-                                        ],
-                                        "type": "text/javascript"
-                                    }
-                                }
-                            ],
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"position\": 1,\n  \"activityType\": \"LESSON\",\n  \"contentRef\": \"lesson:intro\",\n  \"estimatedMinutes\": 30\n}"
-                                },
-                                "url": "{{gateway_url}}/planning/plans/{{plan_id}}/modules/{{module_id}}/activities"
-                            }
-                        },
-                        {
-                            "name": "Get Plan Activities",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/planning/plans/{{plan_id}}/activities"
-                            }
-                        },
-                        {
-                            "name": "Update Activity Status (US-110)",
-                            "request": {
-                                "method": "PATCH",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"status\": \"completed\"\n}"
-                                },
-                                "url": "{{gateway_url}}/planning/plans/{{plan_id}}/activities/{{activity_id}}"
-                            }
-                        }
-                    ]
+                  "key": "username",
+                  "value": "{{admin_user}}"
                 }
-            ]
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "Assessment Service",
-            "item": [
-                {
-                    "name": "Start Session (Adaptive)",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();",
-                                    "if(jsonData.id) {",
-                                    "    pm.environment.set(\"session_id\", jsonData.id);",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"planId\": \"{{plan_id}}\",\n  \"type\": \"ADAPTIVE\"\n}"
-                        },
-                        "url": "{{gateway_url}}/assessment/assessments/sessions"
-                    }
-                },
-                {
-                    "name": "Get Next Item (US-0115 Deduplication)",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();",
-                                    "if(jsonData.id) {",
-                                    "    pm.environment.set(\"item_id\", jsonData.id);",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}"
-                            }
-                        ],
-                        "url": "{{gateway_url}}/assessment/assessments/sessions/{{session_id}}/next-item"
-                    }
-                },
-                {
-                    "name": "Submit Response",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"assessmentItemId\": \"{{item_id}}\",\n  \"selectedOptionId\": \"option-1\",\n  \"responsePayload\": \"text response\",\n  \"responseTimeMs\": 2500\n}"
-                        },
-                        "url": "{{gateway_url}}/assessment/assessments/sessions/{{session_id}}/responses"
-                    }
-                }
-            ]
+          "name": "6. Create ADMIN Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{master_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"ADMIN\"}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/roles",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{realm}}",
+                "roles"
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "Tracking Service",
-            "item": [
-                {
-                    "name": "Events",
-                    "item": [
-                        {
-                            "name": "Track Event",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"eventType\": \"LESSON_COMPLETED\",\n  \"entityType\": \"CONTENT\",\n  \"entityId\": \"{{content_id}}\",\n  \"payload\": {\n    \"score\": 100,\n    \"durationSeconds\": 120\n  }\n}"
-                                },
-                                "url": "{{gateway_url}}/tracking/events"
-                            }
-                        },
-                        {
-                            "name": "Get Events",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/tracking/events?userId={{user_id}}"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "Analytics",
-                    "item": [
-                        {
-                            "name": "Get User Stats",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/tracking/analytics/users/{{user_id}}/stats"
-                            }
-                        },
-                        {
-                            "name": "Get User Activity",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{access_token}}"
-                                    }
-                                ],
-                                "url": "{{gateway_url}}/tracking/analytics/users/{{user_id}}/activity"
-                            }
-                        }
-                    ]
-                }
-            ]
+          "name": "7. Get Role ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if(jsonData.id) {",
+                  "    pm.environment.set(\"role_id\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{master_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/roles/ADMIN",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{realm}}",
+                "roles",
+                "ADMIN"
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "AI Service",
-            "item": [
-                {
-                    "name": "Health Check",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": "{{ai_service_url}}/health"
-                    }
-                },
-                {
-                    "name": "Generate Plan",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"profile\": {\n    \"level\": \"BEGINNER\",\n    \"learningStyle\": \"visual\"\n  },\n  \"goals\": [\n    {\n      \"id\": \"{{goal_id}}\",\n      \"targetDate\": \"2026-12-31\"\n    }\n  ],\n  \"contentCatalog\": []\n}"
-                        },
-                        "url": "{{ai_service_url}}/v1/plans"
-                    }
-                },
-                {
-                    "name": "Replan",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"currentPlan\": {},\n  \"recentEvents\": [],\n  \"updatedSkillState\": []\n}"
-                        },
-                        "url": "{{ai_service_url}}/v1/plans/adjustments"
-                    }
-                },
-                {
-                    "name": "Next Item",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"domain\": \"react-dev\",\n  \"skillState\": [],\n  \"recentHistory\": [],\n  \"excludeItemIds\": []\n}"
-                        },
-                        "url": "{{ai_service_url}}/v1/assessments/items"
-                    }
-                },
-                {
-                    "name": "Feedback",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"item\": {\n    \"stem\": \"Question?\"\n  },\n  \"userResponse\": {\n    \"selectedOptionId\": \"a\"\n  }\n}"
-                        },
-                        "url": "{{ai_service_url}}/v1/assessments/feedback"
-                    }
-                },
-                {
-                    "name": "Generate Diagnostic Test",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"domain\": \"react-dev\",\n  \"level\": \"BEGINNER\",\n  \"nQuestions\": 5\n}"
-                        },
-                        "url": "{{ai_service_url}}/v1/assessments/diagnostic-tests"
-                    }
-                },
-                {
-                    "name": "Generate Lessons",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"domain\": \"react-dev\",\n  \"nLessons\": 3,\n  \"level\": \"BEGINNER\"\n}"
-                        },
-                        "url": "{{ai_service_url}}/v1/contents/lessons"
-                    }
-                },
-                {
-                    "name": "Generate Assessment Items",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"domain\": \"react-dev\",\n  \"nItems\": 5,\n  \"itemType\": \"multiple_choice\"\n}"
-                        },
-                        "url": "{{ai_service_url}}/v1/contents/assessment-items"
-                    }
-                }
-            ]
+          "name": "8. Assign Role to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{master_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[{\"id\": \"{{role_id}}\", \"name\": \"ADMIN\"}]"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{admin_uid}}/role-mappings/realm",
+              "host": [
+                "{{keycloak_url}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{realm}}",
+                "users",
+                "{{admin_uid}}",
+                "role-mappings",
+                "realm"
+              ]
+            }
+          },
+          "response": []
         }
-    ],
-    "variable": [
+      ]
+    },
+    {
+      "name": "Content Service",
+      "item": [
         {
-            "key": "gateway_url",
-            "value": "http://localhost:8762",
-            "type": "string"
+          "name": "Domains",
+          "item": [
+            {
+              "name": "Get All Domains",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/domains",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "domains"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Domain by ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/domains/{{domain_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "domains",
+                    "{{domain_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Domain",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if(jsonData.id) {",
+                      "    pm.environment.set(\"domain_id\", jsonData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"REACT_DEV\",\n  \"name\": \"React Development\",\n  \"description\": \"Master React\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/domains",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "domains"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         },
         {
-            "key": "keycloak_url",
-            "value": "http://localhost:8080",
-            "type": "string"
+          "name": "Skills",
+          "item": [
+            {
+              "name": "Get Skills (Filter by Code)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills?code=react-basics",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills"
+                  ],
+                  "query": [
+                    {
+                      "key": "code",
+                      "value": "react-basics"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Skill by ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills/{{skill_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills",
+                    "{{skill_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Skill",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if(jsonData.id) {",
+                      "    pm.environment.set(\"skill_id\", jsonData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"code\": \"react-basics\",\n  \"name\": \"React Basics\",\n  \"description\": \"Core concepts\",\n  \"level\": \"BEGINNER\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Skill",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"React Basics Updated\",\n  \"description\": \"Updated Description\",\n  \"level\": \"BEGINNER\",\n  \"tags\": [\"frontend\", \"js\"]\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills/{{skill_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills",
+                    "{{skill_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Prerequisites",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills/{{skill_id}}/prerequisites",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills",
+                    "{{skill_id}}",
+                    "prerequisites"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Set Prerequisites",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "[\"{{other_skill_id}}\"]"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills/{{skill_id}}/prerequisites",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills",
+                    "{{skill_id}}",
+                    "prerequisites"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Skill",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills/{{skill_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills",
+                    "{{skill_id}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         },
         {
-            "key": "ai_service_url",
-            "value": "http://localhost:8000",
-            "type": "string"
-        },
-        {
-            "key": "realm",
-            "value": "learnsmart",
-            "type": "string"
-        },
-        {
-            "key": "client_id",
-            "value": "learnsmart-frontend",
-            "type": "string"
-        },
-        {
-            "key": "admin_user",
-            "value": "admin1",
-            "type": "string"
-        },
-        {
-            "key": "admin_pass",
-            "value": "password",
-            "type": "string"
-        },
-        {
-            "key": "access_token",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "user_id",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "plan_id",
-            "value": "",
-            "type": "string"
+          "name": "Content Items",
+          "item": [
+            {
+              "name": "Get All Content Items",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Content Item by ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/{{content_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "{{content_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Content Item",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if(jsonData.id) {",
+                      "    pm.environment.set(\"content_id\", jsonData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"type\": \"TEXT\",\n  \"title\": \"Intro to React\",\n  \"description\": \"Basic intro\",\n  \"estimatedMinutes\": 15,\n  \"difficulty\": \"BEGINNER\",\n  \"active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Generate Content (AI)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"topic\": \"Advanced Hooks\",\n  \"nLessons\": 2\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/generate",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "generate"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Link Skills to Content",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "[{\"skillId\": \"{{skill_id}}\", \"weight\": 1.0}]"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/{{content_id}}/skills",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "{{content_id}}",
+                    "skills"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Content Item",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Intro to React (Revised)\",\n  \"type\": \"TEXT\",\n  \"active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/{{content_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "{{content_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Content Item",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/{{content_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "{{content_id}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         }
-    ]
+      ]
+    },
+    {
+      "name": "Profile Service",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Register User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if(jsonData.userId) {",
+                      "    pm.environment.set(\"user_id\", jsonData.userId);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"juan_perez\",\n  \"email\": \"prueba@test.com\",\n  \"password\": \"Password123!\",   \n  \"displayName\": \"Juan Perez\", \n  \"firstName\": \"Juan\",\n  \"lastName\": \"Pérez\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/auth/register",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "My Profile",
+          "item": [
+            {
+              "name": "Get My Profile",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update My Profile",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get My Progress",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/progress",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "progress"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Goals",
+          "item": [
+            {
+              "name": "Get My Goals",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/goals",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "goals"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Goal (US-093 Validation)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if(jsonData.id) {",
+                      "    pm.environment.set(\"goal_id\", jsonData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "raw": "{\n  \"title\": \"Master React\",\n  \"description\": \"From validation\",\n  \"domainId\": \"{{domain_id}}\",\n  \"targetLevel\": \"INTERMEDIATE\",\n   \"dueDate\": \"2026-12-31\",\n  \"intensity\": \"minimum\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/goals",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "goals"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Goal",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Master React (Updated)\",\n  \"targetDate\": \"2027-01-01\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/goals/{{goal_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "goals",
+                    "{{goal_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Patch Goal (US-096)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/goals/{{goal_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "goals",
+                    "{{goal_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Goal Progress (US-096)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"percentage\": 50\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/goals/{{goal_id}}/progress",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "goals",
+                    "{{goal_id}}",
+                    "progress"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Complete Goal (US-096)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/goals/{{goal_id}}/complete",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "goals",
+                    "{{goal_id}}",
+                    "complete"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Goal",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/goals/{{goal_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "goals",
+                    "{{goal_id}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Preferences",
+          "item": [
+            {
+              "name": "Get Preferences",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/preferences",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "preferences"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Preferences",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"hoursPerWeek\": 10.0,\n  \"preferredDays\": [\"SATURDAY\"],\n  \"notificationsEnabled\": true\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/preferences",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "preferences"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Preferences Audit Trail",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/{{user_id}}/preferences/audit",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "{{user_id}}",
+                    "preferences",
+                    "audit"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Audit",
+          "item": [
+            {
+              "name": "Get My Audit Logs (US-094)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/me/audit-logs",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "me",
+                    "audit-logs"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Audit Trail (Admin)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/profiles/{{user_id}}/audit",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "profiles",
+                    "{{user_id}}",
+                    "audit"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Planning Service",
+      "item": [
+        {
+          "name": "Plans",
+          "item": [
+            {
+              "name": "Create Plan (US-111 Validation)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if(jsonData.id) {",
+                      "    pm.environment.set(\"plan_id\", jsonData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"goalId\": \"{{goal_id}}\",\n  \"name\": \"React Mastery\",\n  \"modules\": [\n    {\n      \"title\": \"React Basics\",\n      \"estimatedHours\": 5,\n      \"position\": 1,\n      \"status\": \"pending\"\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Plan by ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Plans",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans?userId={{user_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans"
+                  ],
+                  "query": [
+                    {
+                      "key": "userId",
+                      "value": "{{user_id}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Plan",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"completed\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Replan (US-107)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}/replan?reason=falling_behind",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}",
+                    "replan"
+                  ],
+                  "query": [
+                    {
+                      "key": "reason",
+                      "value": "falling_behind"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Replan Triggers",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}/replan-triggers",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}",
+                    "replan-triggers"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Certificates",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/certificates?userId={{user_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "certificates"
+                  ],
+                  "query": [
+                    {
+                      "key": "userId",
+                      "value": "{{user_id}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Generate Diagnostic Test",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"react-dev\",\n  \"level\": \"BEGINNER\",\n  \"nQuestions\": 5\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/diagnostics",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "diagnostics"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Modules & Activities",
+          "item": [
+            {
+              "name": "Get Plan Modules",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}/modules",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}",
+                    "modules"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Module Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"in_progress\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}/modules/{{module_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}",
+                    "modules",
+                    "{{module_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Activity",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if(jsonData.id) {",
+                      "    pm.environment.set(\"activity_id\", jsonData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"position\": 1,\n  \"activityType\": \"LESSON\",\n  \"contentRef\": \"lesson:intro\",\n  \"estimatedMinutes\": 30\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}/modules/{{module_id}}/activities",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}",
+                    "modules",
+                    "{{module_id}}",
+                    "activities"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Plan Activities",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}/activities",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}",
+                    "activities"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Activity Status (US-110)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"completed\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/planning/plans/{{plan_id}}/activities/{{activity_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "planning",
+                    "plans",
+                    "{{plan_id}}",
+                    "activities",
+                    "{{activity_id}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Assessment Service",
+      "item": [
+        {
+          "name": "Start Session (Adaptive)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if(jsonData.id) {",
+                  "    pm.environment.set(\"session_id\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"planId\": \"{{plan_id}}\",\n  \"type\": \"ADAPTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/assessment/assessments/sessions",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "assessment",
+                "assessments",
+                "sessions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Next Item (US-0115 Deduplication)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if(jsonData.id) {",
+                  "    pm.environment.set(\"item_id\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/assessment/assessments/sessions/{{session_id}}/next-item",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "assessment",
+                "assessments",
+                "sessions",
+                "{{session_id}}",
+                "next-item"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Response",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assessmentItemId\": \"{{item_id}}\",\n  \"selectedOptionId\": \"option-1\",\n  \"responsePayload\": \"text response\",\n  \"responseTimeMs\": 2500\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/assessment/assessments/sessions/{{session_id}}/responses",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "assessment",
+                "assessments",
+                "sessions",
+                "{{session_id}}",
+                "responses"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tracking Service",
+      "item": [
+        {
+          "name": "Events",
+          "item": [
+            {
+              "name": "Track Event",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"eventType\": \"LESSON_COMPLETED\",\n  \"entityType\": \"CONTENT\",\n  \"entityId\": \"{{content_id}}\",\n  \"payload\": {\n    \"score\": 100,\n    \"durationSeconds\": 120\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/tracking/events",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "tracking",
+                    "events"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Events",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/tracking/events?userId={{user_id}}",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "tracking",
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "userId",
+                      "value": "{{user_id}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Analytics",
+          "item": [
+            {
+              "name": "Get User Stats",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/tracking/analytics/users/{{user_id}}/stats",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "tracking",
+                    "analytics",
+                    "users",
+                    "{{user_id}}",
+                    "stats"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Activity",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/tracking/analytics/users/{{user_id}}/activity",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "tracking",
+                    "analytics",
+                    "users",
+                    "{{user_id}}",
+                    "activity"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI Service",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ai_service_url}}/health",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"profile\": {\n    \"level\": \"BEGINNER\",\n    \"learningStyle\": \"visual\"\n  },\n  \"goals\": [\n    {\n      \"id\": \"{{goal_id}}\",\n      \"targetDate\": \"2026-12-31\"\n    }\n  ],\n  \"contentCatalog\": []\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/plans",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "plans"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Replan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"currentPlan\": {},\n  \"recentEvents\": [],\n  \"updatedSkillState\": []\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/plans/adjustments",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "plans",
+                "adjustments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Next Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"domain\": \"react-dev\",\n  \"skillState\": [],\n  \"recentHistory\": [],\n  \"excludeItemIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/assessments/items",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "assessments",
+                "items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"item\": {\n    \"stem\": \"Question?\"\n  },\n  \"userResponse\": {\n    \"selectedOptionId\": \"a\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/assessments/feedback",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "assessments",
+                "feedback"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Diagnostic Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": \"react-dev\",\n  \"level\": \"BEGINNER\",\n  \"nQuestions\": 5\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/assessments/diagnostic-tests",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "assessments",
+                "diagnostic-tests"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Lessons",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": \"react-dev\",\n  \"nLessons\": 3,\n  \"level\": \"BEGINNER\"\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/contents/lessons",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "contents",
+                "lessons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Assessment Items",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": \"react-dev\",\n  \"nItems\": 5,\n  \"itemType\": \"multiple_choice\"\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/contents/assessment-items",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "contents",
+                "assessment-items"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "gateway_url",
+      "value": "http://localhost:8762",
+      "type": "string"
+    },
+    {
+      "key": "keycloak_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "ai_service_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "realm",
+      "value": "learnsmart",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "learnsmart-frontend",
+      "type": "string"
+    },
+    {
+      "key": "admin_user",
+      "value": "admin1",
+      "type": "string"
+    },
+    {
+      "key": "admin_pass",
+      "value": "password",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "plan_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }

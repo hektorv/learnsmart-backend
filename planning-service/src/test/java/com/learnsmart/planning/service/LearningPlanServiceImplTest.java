@@ -39,6 +39,8 @@ class LearningPlanServiceImplTest {
     private Clients.ContentClient contentClient;
     @Mock
     private Clients.AiClient aiClient;
+    @Mock
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @InjectMocks
     private LearningPlanServiceImpl planService;

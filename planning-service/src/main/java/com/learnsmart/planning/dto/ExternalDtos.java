@@ -81,7 +81,7 @@ public class ExternalDtos {
     @AllArgsConstructor
     public static class GenerateDiagnosticTestRequest {
         @Builder.Default
-        private String domain = "general";
+        private String domainId = "00000000-0000-0000-0000-000000000000"; // Default UUID placeholder
         @Builder.Default
         private String level = "BEGINNER";
         @Builder.Default
