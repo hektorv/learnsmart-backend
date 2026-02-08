@@ -62,6 +62,7 @@ class NextItemRequest(BaseModel):
     skillState: List[Dict[str, Any]] = []
     recentHistory: List[Dict[str, Any]] = []
     excludeItemIds: List[str] = []
+    contextText: Optional[str] = None  # US-10-04: Support for lesson-based context
 
 class NextItemResponse(BaseModel):
     item: Dict[str, Any]
@@ -151,12 +152,16 @@ def next_item(request: NextItemRequest):
 
         val_domain = InputValidator.validate_text(request.domain)
         val_history = InputValidator.validate_obj(request.recentHistory)
+        val_context = None
+        if request.contextText:
+            val_context = InputValidator.validate_text(request.contextText, "contextText")
 
         result = llm_service.generate_next_item(
             domain=val_domain,
             mastery=mastery,
             recent_history=val_history,
-            exclude_item_ids=request.excludeItemIds
+            exclude_item_ids=request.excludeItemIds,
+            context_text=val_context  # US-10-04: Pass lesson context
         )
         return NextItemResponse(
             item=result.get("item", {}),
@@ -245,19 +250,27 @@ class GenerateContentRequest(BaseModel):
 
 class GenerateContentResponse(BaseModel):
     lessons: List[Dict[str, Any]]
+    assessmentItems: Optional[List[Dict[str, Any]]] = None
 
 @app.post("/v1/contents/lessons", response_model=GenerateContentResponse)
 def generate_lessons(request: GenerateContentRequest):
     try:
-        val_domain_id = InputValidator.validate_uuid(request.domainId, "domainId")
-        val_locale = InputValidator.validate_text(request.locale)
-
+        val_domain = InputValidator.validate_text(request.domainId)
+        val_level = InputValidator.validate_text(request.level)
+        
         result = llm_service.generate_lessons(
-            domain=val_domain_id,
+            domain=val_domain,
             n_lessons=request.nLessons,
-            locale=val_locale
+            level=val_level,
+            difficulty=request.difficulty,
+            locale=request.locale
         )
-        return GenerateContentResponse(lessons=result.get("lessons", []))
+            
+        return GenerateContentResponse(
+            lessons=result.get("lessons", []),
+            assessmentItems=result.get("assessmentItems", [])
+        )
+
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -270,6 +283,7 @@ class GenerateAssessmentItemsRequest(BaseModel):
     itemType: str = "multiple_choice"
     difficultyRange: Optional[Dict[str, float]] = None
     locale: str = "es-ES"
+    contextText: Optional[str] = None  # US-10-02: Support for deterministic context
 
 class GenerateAssessmentItemsResponse(BaseModel):
     items: List[Dict[str, Any]]
@@ -278,32 +292,18 @@ class GenerateAssessmentItemsResponse(BaseModel):
 def generate_assessment_items(request: GenerateAssessmentItemsRequest):
     try:
         val_domain_id = InputValidator.validate_uuid(request.domainId, "domainId")
+        val_context = None
+        if request.contextText:
+             val_context = InputValidator.validate_text(request.contextText, "contextText")
         
-        # MOCK IMPLEMENTATION (Should call llm_service)
-        # Assuming llm_service has a method or using generic mock for now
-        # Ideally we add generate_assessment_items to llm_service.py
-        
-        # Calling a hypothetical method (that we will add/ensure exists)
-        # result = llm_service.generate_items(...)
-        
-        # For now, inline mock or we update llm_service next.
-        # Let's return a mock structure.
-        
-        items = []
-        for i in range(request.nItems):
-            items.append({
-                # tempId removed as ID should come from content-service
-                "domainId": request.domainId,
-                "type": request.itemType,
-                "stem": f"Generated question {i+1} for domain {request.domainId}",
-                "options": [
-                    {"optionId": "a", "statement": "Option A (Correct)", "isCorrect": True},
-                    {"optionId": "b", "statement": "Option B", "isCorrect": False}
-                ],
-                "difficulty": 0.5
-            })
+        result = llm_service.generate_assessment_items(
+            domain=val_domain_id,
+            n_items=request.nItems,
+            item_type=request.itemType,
+            context_text=val_context
+        )
             
-        return GenerateAssessmentItemsResponse(items=items)
+        return GenerateAssessmentItemsResponse(items=result.get("items", []))
 
     except HTTPException as e:
         raise e
