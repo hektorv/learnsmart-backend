@@ -38,14 +38,13 @@ class SkillControllerTest {
     @Test
     void testGetSkills() {
         UUID domainId = UUID.randomUUID();
-        String code = "MATH-ALG";
 
-        when(skillService.findAll(eq(domainId), eq(code), any(), anyInt(), anyInt()))
+        when(skillService.findAll(eq(domainId), any(), anyInt(), anyInt()))
                 .thenReturn(Collections.emptyList());
 
-        List<Skill> result = controller.getSkills(domainId, code, 0, 10);
+        List<Skill> result = controller.getSkills(domainId, 0, 10);
         assertTrue(result.isEmpty());
-        verify(skillService).findAll(eq(domainId), eq(code), any(), eq(0), eq(10));
+        verify(skillService).findAll(eq(domainId), any(), eq(0), eq(10));
     }
 
     @Test
@@ -78,6 +77,7 @@ class SkillControllerTest {
 
         when(domainService.findById(domainId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> controller.createSkill(input));
+        assertThrows(com.learnsmart.content.exception.DomainNotFoundException.class,
+                () -> controller.createSkill(input));
     }
 }

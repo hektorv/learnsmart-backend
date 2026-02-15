@@ -20,4 +20,11 @@ public interface ContentItemService {
     void updateSkillAssociations(UUID contentItemId, List<UUID> skillIds, List<Double> weights);
 
     List<ContentItem> generateAndSave(UUID domainId, int nLessons, String topic);
+
+    // US-10-08: AI Assessment Item Generation
+    List<com.learnsmart.content.dto.ContentDtos.AssessmentItemDraft> generateAssessments(UUID contentItemId,
+            int nItems);
+
+    // US-10-09: AI Skill Tagging
+    List<com.learnsmart.content.model.Skill> autoLinkSkills(UUID contentItemId);
 }

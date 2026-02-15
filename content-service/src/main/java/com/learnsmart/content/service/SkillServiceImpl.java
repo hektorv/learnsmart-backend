@@ -1,7 +1,11 @@
 package com.learnsmart.content.service;
 
 import com.learnsmart.content.model.Skill;
+import com.learnsmart.content.model.Domain;
 import com.learnsmart.content.repository.SkillRepository;
+import com.learnsmart.content.client.AiServiceClient;
+import com.learnsmart.content.dto.AiDtos;
+import com.learnsmart.content.exception.DomainNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -11,20 +15,20 @@ import java.util.UUID;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class SkillServiceImpl implements SkillService {
 
     private final SkillRepository skillRepository;
+    private final DomainService domainService;
+    private final AiServiceClient aiServiceClient;
 
     @Override
-    public List<Skill> findAll(UUID domainId, String code, String search, Integer page, Integer size) {
+    public List<Skill> findAll(UUID domainId, String search, Integer page, Integer size) {
         if (domainId != null) {
             return skillRepository.findByDomainId(domainId);
-        }
-        if (code != null) {
-            return skillRepository.findByCodeContaining(code);
         }
         return skillRepository.findAll();
     }
@@ -90,6 +94,90 @@ public class SkillServiceImpl implements SkillService {
 
         skill.setPrerequisites(new HashSet<>(newPrereqs));
         skillRepository.save(skill);
+    }
+
+    @Override
+    @Transactional
+    public List<Skill> generateSkills(UUID domainId, String topic) {
+        // US-10-06: AI Skill Discovery (Taxonomy)
+
+        // 1. Validate domain exists
+        Domain domain = domainService.findById(domainId)
+                .orElseThrow(() -> new DomainNotFoundException("Domain not found: " + domainId));
+
+        // 2. Call AI service to generate skill taxonomy
+        AiDtos.GenerateSkillsRequest aiRequest = AiDtos.GenerateSkillsRequest.builder()
+                .topic(topic)
+                .domainId(domain.getName()) // Pass domain name, not UUID
+                .build();
+
+        AiDtos.GenerateSkillsResponse aiResponse = aiServiceClient.generateSkills(aiRequest);
+
+        // 3. Convert AI drafts to Skill entities and persist
+        List<Skill> createdSkills = aiResponse.getSkills().stream()
+                .map(draft -> {
+                    Skill skill = new Skill();
+                    skill.setDomain(domain);
+                    skill.setCode(draft.getCode());
+                    skill.setName(draft.getName());
+                    skill.setDescription(draft.getDescription());
+                    skill.setLevel(draft.getLevel());
+                    skill.setTags(draft.getTags());
+                    skill.setPrerequisites(new java.util.HashSet<>());
+                    return skillRepository.save(skill);
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        return createdSkills;
+    }
+
+    @Override
+    @Transactional
+    public void linkSkills(UUID domainId) {
+        // US-10-07: AI Prerequisite Linking (Graph)
+
+        // 1. Fetch all skills for the domain
+        List<Skill> domainSkills = skillRepository.findByDomainId(domainId);
+
+        if (domainSkills.isEmpty()) {
+            throw new IllegalArgumentException("No skills found for domain: " + domainId);
+        }
+
+        // 2. Convert to AI drafts
+        List<AiDtos.SkillDraft> skillDrafts = domainSkills.stream()
+                .map(skill -> AiDtos.SkillDraft.builder()
+                        .code(skill.getCode())
+                        .name(skill.getName())
+                        .description(skill.getDescription())
+                        .level(skill.getLevel())
+                        .tags(skill.getTags())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+
+        // 3. Call AI service to generate prerequisite graph
+        AiDtos.GeneratePrerequisitesRequest aiRequest = AiDtos.GeneratePrerequisitesRequest.builder()
+                .skills(skillDrafts)
+                .build();
+
+        AiDtos.GeneratePrerequisitesResponse aiResponse = aiServiceClient.generatePrerequisites(aiRequest);
+
+        // 4. Create a map of code -> Skill for quick lookup
+        Map<String, Skill> skillByCode = domainSkills.stream()
+                .collect(java.util.stream.Collectors.toMap(Skill::getCode, s -> s));
+
+        // 5. Update prerequisites for each skill
+        for (AiDtos.PrerequisiteLink link : aiResponse.getPrerequisites()) {
+            Skill skill = skillByCode.get(link.getSkillCode());
+            if (skill != null && link.getPrerequisiteCodes() != null) {
+                Set<Skill> prerequisites = link.getPrerequisiteCodes().stream()
+                        .map(skillByCode::get)
+                        .filter(java.util.Objects::nonNull)
+                        .collect(java.util.stream.Collectors.toSet());
+
+                skill.setPrerequisites(prerequisites);
+                skillRepository.save(skill);
+            }
+        }
     }
 
     private void checkCycle(Skill current, UUID targetId, Set<UUID> visited) {

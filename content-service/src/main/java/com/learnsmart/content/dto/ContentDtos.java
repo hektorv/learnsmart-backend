@@ -75,4 +75,24 @@ public class ContentDtos {
         private String level;
         private List<String> tags;
     }
+
+    @Data
+    public static class GenerateSkillsInput {
+        private String topic;
+    }
+
+    // US-10-08: AI Assessment Item Generation
+    @Data
+    public static class GenerateAssessmentsInput {
+        private int nItems;
+    }
+
+    @Data
+    public static class AssessmentItemDraft {
+        private String question;
+        private List<String> options;
+        private int correctIndex;
+        private String explanation;
+        private String difficulty;
+    }
 }

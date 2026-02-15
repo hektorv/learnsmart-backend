@@ -226,32 +226,81 @@ class LLMService:
         }
 
     
-    def generate_assessment_items(self, domain: str, n_items: int, item_type: str, context_text: Optional[str] = None) -> Dict[str, Any]:
+    def generate_skills(self, topic: str, domain_id: str) -> Dict[str, Any]:
+        """Generate a taxonomy of skills for a given topic."""
         if not self.client:
+            # Mock fallback
+            return {
+                "skills": [
+                    {
+                        "code": "MOCK_SKILL_001",
+                        "name": f"Mock Skill for {topic}",
+                        "description": "This is a mock skill generated for testing",
+                        "level": "BEGINNER",
+                        "tags": ["mock", "test"]
+                    }
+                ]
+            }
+        
+        system_prompt = prompts.SKILL_TAXONOMY_PROMPT.format(
+            topic=topic,
+            domain_id=domain_id
+        )
+        user_prompt = f"Generate skills for topic: <topic>{topic}</topic>"
+        
+        return self._call_llm(system_prompt, user_prompt)
+
+    def generate_prerequisites(self, skills: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Determine prerequisite relationships between skills."""
+        if not self.client:
+            # Mock fallback: no prerequisites
+            return {"prerequisites": []}
+        
+        system_prompt = prompts.PREREQUISITE_GRAPH_PROMPT
+        user_prompt = f"Analyze these skills and determine prerequisites:\n{json.dumps(skills)}"
+        
+        return self._call_llm(system_prompt, user_prompt)
+
+    def generate_assessment_items(self, context_text: str, n_items: int, domain: str) -> Dict[str, Any]:
+        """US-10-08: Generate assessment items based on lesson content."""
+        if not self.client:
+            # Mock fallback: return sample items
             return {
                 "items": [
                     {
-                        "domainId": domain,
-                        "type": item_type,
-                        "stem": f"Mock question based on context ({context_text[:20]}...)" if context_text else f"Mock question for {domain}",
-                        "options": [
-                             {"optionId": "a", "statement": "Correct Option", "isCorrect": True},
-                             {"optionId": "b", "statement": "Wrong Option", "isCorrect": False}
-                        ],
-                        "difficulty": 0.5
-                    } for _ in range(n_items)
+                        "question": f"Sample question {i+1} about the content",
+                        "options": ["Option A", "Option B", "Option C", "Option D"],
+                        "correctIndex": i % 4,
+                        "explanation": f"This is the explanation for question {i+1}",
+                        "difficulty": ["BEGINNER", "INTERMEDIATE", "ADVANCED"][i % 3]
+                    }
+                    for i in range(n_items)
                 ]
             }
-
-        input_context = f"Domain: {domain}"
-        if context_text:
-            input_context += f"\n\nCONTEXT TEXT:\n{context_text}\n\nINSTRUCTION: Generate questions based EXCLUSIVELY on the provided CONTEXT TEXT."
-
+        
         system_prompt = prompts.ASSESSMENT_GENERATION_PROMPT.format(
-            domain=domain, n_items=n_items, item_type=item_type
+            context=context_text,
+            domain=domain,
+            n_items=n_items
         )
-        user_prompt = f"Generate {n_items} {item_type} questions. {input_context}"
+        user_prompt = f"Generate {n_items} assessment items for the provided lesson content."
+        
+        return self._call_llm(system_prompt, user_prompt)
 
+    def analyze_skill_tags(self, content_text: str, domain: str) -> Dict[str, Any]:
+        """US-10-09: Analyze content and suggest relevant skill codes."""
+        if not self.client:
+            # Mock fallback: return generic skill codes
+            return {
+                "skill_codes": ["SKILL_CODE_001", "SKILL_CODE_002", "SKILL_CODE_003"]
+            }
+        
+        system_prompt = prompts.SKILL_TAGGING_PROMPT.format(
+            content=content_text,
+            domain=domain
+        )
+        user_prompt = "Analyze the content and identify relevant skill codes."
+        
         return self._call_llm(system_prompt, user_prompt)
 
 llm_service = LLMService()

@@ -22,10 +22,9 @@ public class SkillController {
 
     @GetMapping
     public List<Skill> getSkills(@RequestParam(required = false) UUID domainId,
-            @RequestParam(required = false) String code,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return skillService.findAll(domainId, code, null, page, size);
+        return skillService.findAll(domainId, null, page, size);
     }
 
     @GetMapping("/{id}")
@@ -39,7 +38,7 @@ public class SkillController {
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Skill> createSkill(@RequestBody ContentDtos.SkillInput input) {
         Domain domain = domainService.findById(input.getDomainId())
-                .orElseThrow(() -> new RuntimeException("Domain not found"));
+                .orElseThrow(() -> new com.learnsmart.content.exception.DomainNotFoundException(input.getDomainId()));
 
         Skill s = new Skill();
         s.setDomain(domain);
@@ -92,6 +91,23 @@ public class SkillController {
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updatePrerequisites(@PathVariable UUID id, @RequestBody List<UUID> prerequisiteIds) {
         skillService.updatePrerequisites(id, prerequisiteIds);
+        return ResponseEntity.noContent().build();
+    }
+
+    // US-10-06: AI Skill Discovery (Taxonomy)
+    @PostMapping("/domains/{domainId}/generate")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Skill>> generateSkills(@PathVariable UUID domainId,
+            @RequestBody ContentDtos.GenerateSkillsInput input) {
+        List<Skill> skills = skillService.generateSkills(domainId, input.getTopic());
+        return new ResponseEntity<>(skills, HttpStatus.CREATED);
+    }
+
+    // US-10-07: AI Prerequisite Linking (Graph)
+    @PostMapping("/domains/{domainId}/link")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> linkSkills(@PathVariable UUID domainId) {
+        skillService.linkSkills(domainId);
         return ResponseEntity.noContent().build();
     }
 }

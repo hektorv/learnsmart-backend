@@ -198,3 +198,16 @@ US ya definida arriba (US-021)
 US ya definida (US-033)
 
 
+## **Feature 10.1 — Integridad y Consistencia**
+
+**US-10-01 – Integridad Referencial de Dominios (UUIDs)**
+*Como arquitecto, quiero usar UUIDs en lugar de códigos de texto para dominios.*
+
+**US-10-05 – Integridad Referencial de Skills (UUIDs)**
+*Como arquitecto, quiero que la gestión de Skills dependa estrictamente del `domainId` y no de códigos textuales.*
+**Criterios de aceptación (Unitarios & Integración):**
+*   `POST /skills` devuelve `400` si falta `domainId` o es nulo.
+*   `POST /skills` devuelve `404` si el `domainId` no existe (validado contra repositorio).
+*   `GET /skills` filtra estrictamente por `domainId` cuando se proporciona.
+*   Se elimina la lógica de búsqueda por `code` en `ContentItemController` (refactor).
+*   Test Unitario: Mock de `DomainService` vacío fuerza excepción `RuntimeException` ("Domain not found") antes de guardar.

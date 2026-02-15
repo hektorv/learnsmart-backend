@@ -103,7 +103,7 @@ public class ContentItemServiceImpl implements ContentItemService {
                 .orElseThrow(() -> new RuntimeException("Domain not found"));
 
         AiDtos.GenerateLessonsRequest request = AiDtos.GenerateLessonsRequest.builder()
-                .domain(domain.getName())
+                .domainId(domain.getName())
                 .skillIds(List.of(topic)) // Using topic as a skill tag
                 .nLessons(nLessons)
                 .level("beginner")
@@ -125,5 +125,83 @@ public class ContentItemServiceImpl implements ContentItemService {
             item.setActive(true);
             return contentItemRepository.save(item);
         }).toList();
+    }
+
+    // US-10-08: AI Assessment Item Generation
+    @Override
+    @Transactional(readOnly = true)
+    public List<com.learnsmart.content.dto.ContentDtos.AssessmentItemDraft> generateAssessments(UUID contentItemId,
+            int nItems) {
+        ContentItem item = contentItemRepository.findById(contentItemId)
+                .orElseThrow(() -> new RuntimeException("ContentItem not found: " + contentItemId));
+
+        // Extract body text from metadata
+        String contextText = item.getMetadata() != null && item.getMetadata().containsKey("body")
+                ? item.getMetadata().get("body").toString()
+                : item.getDescription();
+
+        // Call AI service
+        AiDtos.GenerateAssessmentItemsRequest request = AiDtos.GenerateAssessmentItemsRequest.builder()
+                .contextText(contextText)
+                .nItems(nItems)
+                .domainId(item.getDomain().getName()) // Pass domain name, not UUID
+                .build();
+
+        AiDtos.GenerateAssessmentItemsResponse response = aiServiceClient.generateAssessmentItems(request);
+
+        // Convert AI DTOs to Content DTOs
+        return response.getItems().stream()
+                .map(aiItem -> {
+                    com.learnsmart.content.dto.ContentDtos.AssessmentItemDraft draft = new com.learnsmart.content.dto.ContentDtos.AssessmentItemDraft();
+                    draft.setQuestion(aiItem.getQuestion());
+                    draft.setOptions(aiItem.getOptions());
+                    draft.setCorrectIndex(aiItem.getCorrectIndex());
+                    draft.setExplanation(aiItem.getExplanation());
+                    draft.setDifficulty(aiItem.getDifficulty());
+                    return draft;
+                })
+                .toList();
+    }
+
+    // US-10-09: AI Skill Tagging
+    @Override
+    @Transactional
+    public List<Skill> autoLinkSkills(UUID contentItemId) {
+        ContentItem item = contentItemRepository.findById(contentItemId)
+                .orElseThrow(() -> new RuntimeException("ContentItem not found: " + contentItemId));
+
+        // Extract content text from metadata
+        String contentText = item.getMetadata() != null && item.getMetadata().containsKey("body")
+                ? item.getMetadata().get("body").toString()
+                : item.getDescription();
+
+        // Call AI service
+        AiDtos.AnalyzeSkillTagsRequest request = AiDtos.AnalyzeSkillTagsRequest.builder()
+                .contentText(contentText)
+                .domainId(item.getDomain().getName()) // Pass domain name, not UUID
+                .build();
+
+        AiDtos.AnalyzeSkillTagsResponse response = aiServiceClient.analyzeSkillTags(request);
+
+        // Find skills by code in the domain
+        List<Skill> domainSkills = skillRepository.findByDomainId(item.getDomain().getId());
+        List<Skill> matchedSkills = domainSkills.stream()
+                .filter(skill -> response.getSuggestedSkillCodes().contains(skill.getCode()))
+                .toList();
+
+        // Link skills to content item (clear existing and add new)
+        // TODO: Add deleteByContentItemId method to ContentItemSkillRepository
+        // contentItemSkillRepository.deleteByContentItemId(contentItemId);
+        for (int i = 0; i < matchedSkills.size(); i++) {
+            Skill skill = matchedSkills.get(i);
+            ContentItemSkill cis = new ContentItemSkill();
+            cis.setId(new ContentItemSkill.ContentItemSkillId(contentItemId, skill.getId()));
+            cis.setContentItem(item);
+            cis.setSkill(skill);
+            cis.setWeight(BigDecimal.valueOf(1.0)); // Default weight
+            contentItemSkillRepository.save(cis);
+        }
+
+        return matchedSkills;
     }
 }

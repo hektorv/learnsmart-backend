@@ -124,4 +124,22 @@ public class ContentItemController {
         }
         return dto;
     }
+
+    // US-10-08: AI Assessment Item Generation
+    @PostMapping("/{id}/assessments/generate")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ContentDtos.AssessmentItemDraft>> generateAssessments(
+            @PathVariable UUID id,
+            @RequestBody ContentDtos.GenerateAssessmentsInput input) {
+        List<ContentDtos.AssessmentItemDraft> items = contentService.generateAssessments(id, input.getNItems());
+        return ResponseEntity.ok(items);
+    }
+
+    // US-10-09: AI Skill Tagging
+    @PostMapping("/{id}/skills/auto-link")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<com.learnsmart.content.model.Skill>> autoLinkSkills(@PathVariable UUID id) {
+        List<com.learnsmart.content.model.Skill> linkedSkills = contentService.autoLinkSkills(id);
+        return ResponseEntity.ok(linkedSkills);
+    }
 }

@@ -12,13 +12,15 @@ security:
 
 tags:
   - name: Auth
-    description: Registro de usuarios (creación en Keycloak + perfil).
+    description: Registro de usuarios (creacion en Keycloak + perfil).
   - name: Profile
-    description: Datos básicos de perfil del usuario.
+    description: Datos basicos de perfil del usuario.
   - name: Goals
     description: Objetivos de aprendizaje del usuario.
   - name: Preferences
     description: Preferencias de estudio del usuario.
+  - name: Audit
+    description: Trazabilidad y logs de auditoria.
 
 paths:
   /auth/register:
@@ -40,9 +42,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProfile'
+                $ref: '#/components/schemas/UserProfileResponse'
         '400':
-          description: Datos inválidos
+          description: Datos invalidos
           content:
             application/json:
               schema:
@@ -54,17 +56,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /profiles:
+    post:
+      tags: [Profile]
+      summary: Crear perfil de usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+      responses:
+        '201':
+          description: Perfil creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '400':
+          description: Datos invalidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /profiles/me:
     get:
       tags: [Profile]
       summary: Obtener el perfil del usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
       responses:
         '200':
           description: Perfil del usuario autenticado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProfile'
+                $ref: '#/components/schemas/UserProfileResponse'
         '404':
           description: Perfil no encontrado
           content:
@@ -73,7 +101,9 @@ paths:
                 $ref: '#/components/schemas/Error'
     put:
       tags: [Profile]
-      summary: Crear o actualizar el perfil del usuario actual
+      summary: Actualizar el perfil del usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
       requestBody:
         required: true
         content:
@@ -86,19 +116,53 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProfile'
-        '201':
-          description: Perfil creado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserProfile'
+                $ref: '#/components/schemas/UserProfileResponse'
         '400':
-          description: Datos inválidos
+          description: Datos invalidos
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /profiles/me/progress:
+    get:
+      tags: [Profile]
+      summary: Obtener progreso consolidado del usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
+      responses:
+        '200':
+          description: Progreso del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProgressResponse'
+
+  /profiles/me/audit-logs:
+    get:
+      tags: [Audit]
+      summary: Obtener logs de auditoria del usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista de logs de auditoria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAuditLogResponse'
 
   /profiles/{userId}:
     get:
@@ -117,7 +181,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProfile'
+                $ref: '#/components/schemas/UserProfileResponse'
         '404':
           description: Perfil no encontrado
           content:
@@ -125,10 +189,121 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /profiles/{userId}/audit:
+    get:
+      tags: [Audit]
+      summary: Obtener audit trail de un usuario
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Lista de logs de auditoria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAuditLog'
+
+  /profiles/{userId}/goals/{goalId}/audit:
+    get:
+      tags: [Audit]
+      summary: Obtener audit trail de un objetivo
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: goalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista de logs de auditoria del objetivo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAuditLog'
+
+  /profiles/{userId}/preferences/audit:
+    get:
+      tags: [Audit]
+      summary: Obtener audit trail de preferencias de usuario
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista de logs de auditoria de preferencias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAuditLog'
+
   /profiles/me/goals:
     get:
       tags: [Goals]
       summary: Listar objetivos del usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
       responses:
         '200':
           description: Lista de objetivos
@@ -137,10 +312,12 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserGoal'
+                  $ref: '#/components/schemas/UserGoalResponse'
     post:
       tags: [Goals]
       summary: Crear un objetivo para el usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
       requestBody:
         required: true
         content:
@@ -153,13 +330,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGoal'
+                $ref: '#/components/schemas/UserGoalResponse'
 
   /profiles/me/goals/{goalId}:
     put:
       tags: [Goals]
       summary: Actualizar un objetivo del usuario actual
       parameters:
+        - $ref: '#/components/parameters/XUserId'
         - in: path
           name: goalId
           required: true
@@ -178,7 +356,37 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGoal'
+                $ref: '#/components/schemas/UserGoalResponse'
+        '404':
+          description: Objetivo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [Goals]
+      summary: Actualizar parcialmente un objetivo del usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
+        - in: path
+          name: goalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGoalUpdateRequest'
+      responses:
+        '200':
+          description: Objetivo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGoalResponse'
         '404':
           description: Objetivo no encontrado
           content:
@@ -187,8 +395,9 @@ paths:
                 $ref: '#/components/schemas/Error'
     delete:
       tags: [Goals]
-      summary: Eliminar (o desactivar) un objetivo del usuario actual
+      summary: Eliminar un objetivo del usuario actual
       parameters:
+        - $ref: '#/components/parameters/XUserId'
         - in: path
           name: goalId
           required: true
@@ -205,17 +414,104 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /profiles/me/goals/{goalId}/complete:
+    post:
+      tags: [Goals]
+      summary: Marcar un objetivo como completado
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
+        - in: path
+          name: goalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Objetivo marcado como completado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGoalResponse'
+        '404':
+          description: Objetivo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profiles/me/goals/{goalId}/progress:
+    patch:
+      tags: [Goals]
+      summary: Actualizar porcentaje de progreso de un objetivo
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
+        - in: path
+          name: goalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                percentage:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+      responses:
+        '200':
+          description: Progreso actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGoalResponse'
+        '404':
+          description: Objetivo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profiles/me/goals/status/{status}:
+    get:
+      tags: [Goals]
+      summary: Listar objetivos por estado
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: [ACTIVE, COMPLETED, PAUSED, ABANDONED]
+      responses:
+        '200':
+          description: Lista de objetivos filtrados por estado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserGoalResponse'
+
   /profiles/me/preferences:
     get:
       tags: [Preferences]
       summary: Obtener las preferencias de estudio del usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
       responses:
         '200':
           description: Preferencias del usuario
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserStudyPreferences'
+                $ref: '#/components/schemas/UserStudyPreferencesResponse'
         '404':
           description: Preferencias no configuradas
           content:
@@ -225,27 +521,23 @@ paths:
     put:
       tags: [Preferences]
       summary: Crear o actualizar las preferencias de estudio del usuario actual
+      parameters:
+        - $ref: '#/components/parameters/XUserId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserStudyPreferencesUpdateRequest'
+              $ref: '#/components/schemas/UserStudyPreferencesUpdate'
       responses:
         '200':
           description: Preferencias actualizadas
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserStudyPreferences'
-        '201':
-          description: Preferencias creadas
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserStudyPreferences'
+                $ref: '#/components/schemas/UserStudyPreferencesResponse'
         '400':
-          description: Datos inválidos
+          description: Datos invalidos
           content:
             application/json:
               schema:
@@ -257,6 +549,15 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  parameters:
+    XUserId:
+      in: header
+      name: X-User-Id
+      required: false
+      schema:
+        type: string
+      description: ID del usuario (propagado por el Gateway o para pruebas)
 
   schemas:
     UserRegistrationRequest:
@@ -284,9 +585,8 @@ components:
         additionalAttributes:
           type: object
           additionalProperties: true
-          description: Atributos extra a propagar a Keycloak si aplica.
 
-    UserProfile:
+    UserProfileResponse:
       type: object
       properties:
         userId:
@@ -294,7 +594,6 @@ components:
           format: uuid
         authUserId:
           type: string
-          description: ID de usuario en Keycloak (sub o UUID interno).
         email:
           type: string
           format: email
@@ -327,38 +626,6 @@ components:
         timezone:
           type: string
 
-    UserGoal:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        description:
-          type: string
-        domainId:
-          type: string
-          format: uuid
-          example: 123e4567-e89b-12d3-a456-426614174000
-        targetLevel:
-          type: string
-          example: B2
-        dueDate:
-          type: string
-          format: date
-        intensity:
-          type: string
-          enum: [minimum, standard, aggressive]
-        isActive:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
     UserGoalCreateRequest:
       type: object
       required:
@@ -369,6 +636,9 @@ components:
         description:
           type: string
         domainId:
+          type: string
+          format: uuid
+        skillId:
           type: string
           format: uuid
         targetLevel:
@@ -400,37 +670,228 @@ components:
           enum: [minimum, standard, aggressive]
         isActive:
           type: boolean
+        status:
+          type: string
+          enum: [ACTIVE, COMPLETED, PAUSED, ABANDONED]
+        progressPercentage:
+          type: integer
+          minimum: 0
+          maximum: 100
 
-    UserStudyPreferences:
+    UserGoalResponse:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        domainId:
+          type: string
+          format: uuid
+        skillId:
+          type: string
+          format: uuid
+        targetLevel:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        intensity:
+          type: string
+          enum: [minimum, standard, aggressive]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        completionPercentage:
+          type: integer
+        status:
+          type: string
+          enum: [ACTIVE, COMPLETED, PAUSED, ABANDONED]
+
+    UserStudyPreferencesResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
         hoursPerWeek:
           type: number
-          format: float
+          format: double
         preferredDays:
           type: array
           items:
             type: string
-            example: mon
-        preferredSessionMin:
+        preferredSessionMinutes:
           type: integer
-        contentFormatPriority:
-          type: object
-          additionalProperties:
-            type: number
-          example:
-            video: 0.2
-            text: 0.5
-            practice: 0.3
         notificationsEnabled:
           type: boolean
-        rawPreferences:
-          type: object
-          additionalProperties: true
 
-    UserStudyPreferencesUpdateRequest:
-      allOf:
-        - $ref: '#/components/schemas/UserStudyPreferences'
+    UserStudyPreferencesUpdate:
+      type: object
+      properties:
+        hoursPerWeek:
+          type: number
+          format: double
+        preferredDays:
+          type: array
+          items:
+            type: string
+        preferredSessionMinutes:
+          type: integer
+        notificationsEnabled:
+          type: boolean
+
+    UserAuditLogResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        performedBy:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+        fieldName:
+          type: string
+        oldValue:
+          type: string
+        newValue:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+
+    UserAuditLog:
+      type: object
+      description: Audit log entity (returned by admin audit endpoints)
+      properties:
+        id:
+          type: string
+          format: uuid
+        performedBy:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+        fieldName:
+          type: string
+        oldValue:
+          type: string
+        newValue:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+
+    UserProgressResponse:
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/ProfileInfo'
+        goals:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoalProgress'
+        currentPlan:
+          $ref: '#/components/schemas/PlanProgress'
+        skillsInProgress:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillMasteryShort'
+        activity:
+          $ref: '#/components/schemas/ActivitySummary'
+
+    ProfileInfo:
+      type: object
+      properties:
+        userId:
+          type: string
+        displayName:
+          type: string
+
+    GoalProgress:
+      type: object
+      properties:
+        goalId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        percentage:
+          type: number
+          format: double
+
+    PlanProgress:
+      type: object
+      properties:
+        planId:
+          type: string
+          format: uuid
+        goalId:
+          type: string
+        status:
+          type: string
+        completedModules:
+          type: integer
+        totalModules:
+          type: integer
+        overallPercentage:
+          type: number
+          format: double
+
+    SkillMasteryShort:
+      type: object
+      properties:
+        skillId:
+          type: string
+          format: uuid
+        skillName:
+          type: string
+        mastery:
+          type: number
+          format: double
+
+    ActivitySummary:
+      type: object
+      properties:
+        totalHours:
+          type: number
+          format: double
+        currentStreak:
+          type: integer
 
     Error:
       type: object
@@ -442,4 +903,3 @@ components:
         details:
           type: object
           additionalProperties: true
-

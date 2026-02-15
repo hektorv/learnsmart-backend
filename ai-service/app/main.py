@@ -291,16 +291,15 @@ class GenerateAssessmentItemsResponse(BaseModel):
 @app.post("/v1/contents/assessment-items", response_model=GenerateAssessmentItemsResponse)
 def generate_assessment_items(request: GenerateAssessmentItemsRequest):
     try:
-        val_domain_id = InputValidator.validate_uuid(request.domainId, "domainId")
+        val_domain = InputValidator.validate_text(request.domainId, "domainId")
         val_context = None
         if request.contextText:
              val_context = InputValidator.validate_text(request.contextText, "contextText")
         
         result = llm_service.generate_assessment_items(
-            domain=val_domain_id,
+            context_text=val_context,
             n_items=request.nItems,
-            item_type=request.itemType,
-            context_text=val_context
+            domain=val_domain
         )
             
         return GenerateAssessmentItemsResponse(items=result.get("items", []))
@@ -310,8 +309,87 @@ def generate_assessment_items(request: GenerateAssessmentItemsRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class GenerateSkillsRequest(BaseModel):
+    topic: str
+    domainId: str
+
+class GenerateSkillsResponse(BaseModel):
+    skills: List[Dict[str, Any]]
+
+@app.post("/v1/contents/skills", response_model=GenerateSkillsResponse)
+def generate_skills(request: GenerateSkillsRequest):
+    """US-10-06: Generate a taxonomy of skills for a given topic."""
+    try:
+        # Debug logging to see inputs
+        print(f"DEBUG US-10-06: generate_skills called with topic='{request.topic}' domainId='{request.domainId}'")
+        
+        val_topic = InputValidator.validate_text(request.topic, "topic")
+        val_domain = InputValidator.validate_text(request.domainId, "domainId")
+        
+        result = llm_service.generate_skills(
+            topic=val_topic,
+            domain_id=val_domain
+        )
+        
+        return GenerateSkillsResponse(skills=result.get("skills", []))
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # Also print directly to ensure visibility
+        print(f"ERROR US-10-06: {e}") 
+        raise HTTPException(status_code=500, detail=str(e))
+
+class GeneratePrerequisitesRequest(BaseModel):
+    skills: List[Dict[str, Any]]
+
+class GeneratePrerequisitesResponse(BaseModel):
+    prerequisites: List[Dict[str, Any]]
+
+@app.post("/v1/contents/skills/prerequisites", response_model=GeneratePrerequisitesResponse)
+def generate_prerequisites(request: GeneratePrerequisitesRequest):
+    """US-10-07: Determine prerequisite relationships between skills."""
+    try:
+        val_skills = InputValidator.validate_obj(request.skills)
+        
+        result = llm_service.generate_prerequisites(skills=val_skills)
+        
+        return GeneratePrerequisitesResponse(prerequisites=result.get("prerequisites", []))
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# US-10-09: AI Skill Tagging (Content Analysis)
+class AnalyzeSkillTagsRequest(BaseModel):
+    contentText: str
+    domainId: str
+
+class AnalyzeSkillTagsResponse(BaseModel):
+    suggestedSkillCodes: List[str]
+
+@app.post("/v1/contents/skill-tags", response_model=AnalyzeSkillTagsResponse)
+def analyze_skill_tags(request: AnalyzeSkillTagsRequest):
+    """US-10-09: Analyze content and suggest relevant skill tags."""
+    try:
+        val_content = InputValidator.validate_text(request.contentText, "contentText")
+        val_domain = InputValidator.validate_text(request.domainId, "domainId")
+        
+        result = llm_service.analyze_skill_tags(
+            content_text=val_content,
+            domain=val_domain
+        )
+        
+        return AnalyzeSkillTagsResponse(suggestedSkillCodes=result.get("skill_codes", []))
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
 

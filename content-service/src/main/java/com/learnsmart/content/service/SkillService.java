@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.Optional;
 
 public interface SkillService {
-    List<Skill> findAll(UUID domainId, String code, String search, Integer page, Integer size);
+    List<Skill> findAll(UUID domainId, String search, Integer page, Integer size);
 
     Optional<Skill> findById(UUID id);
 
@@ -19,4 +19,10 @@ public interface SkillService {
     List<Skill> getPrerequisites(UUID id);
 
     void updatePrerequisites(UUID id, List<UUID> prerequisiteIds);
+
+    // US-10-06: AI Skill Discovery
+    List<Skill> generateSkills(UUID domainId, String topic);
+
+    // US-10-07: AI Prerequisite Linking
+    void linkSkills(UUID domainId);
 }

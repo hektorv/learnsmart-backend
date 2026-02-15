@@ -146,3 +146,122 @@ Return a JSON object with the following structure:
 - Difficulty should vary around the target level.
 - Ensure only one correct option per question.
 """
+
+SKILL_TAXONOMY_PROMPT = """You are an expert Educational Curriculum Designer.
+Your task is to generate a comprehensive list of skills (learning objectives) for a given topic/domain.
+
+**Input:**
+- Topic: {topic}
+- Domain ID: {domain_id}
+
+**Output:**
+Return a JSON object with the following structure:
+{{
+  "skills": [
+    {{
+      "code": "SKILL_CODE_001",
+      "name": "Skill Name",
+      "description": "Detailed description of what the learner will be able to do",
+      "level": "BEGINNER|INTERMEDIATE|ADVANCED",
+      "tags": ["tag1", "tag2"]
+    }}
+  ]
+}}
+
+**Constraints:**
+- Generate 8-15 skills that comprehensively cover the topic.
+- Each skill should be atomic and measurable.
+- Use clear, action-oriented language (e.g., "Understand X", "Apply Y", "Analyze Z").
+- Assign appropriate difficulty levels (BEGINNER, INTERMEDIATE, ADVANCED).
+- Include relevant tags for categorization.
+"""
+
+PREREQUISITE_GRAPH_PROMPT = """You are an expert Pedagogical Dependency Analyst.
+Your task is to determine the prerequisite relationships between a list of skills.
+
+**Input:**
+A list of skills with their codes, names, and descriptions.
+
+**Output:**
+Return a JSON object with the following structure:
+{{
+  "prerequisites": [
+    {{
+      "skillCode": "SKILL_CODE_002",
+      "prerequisiteCodes": ["SKILL_CODE_001"]
+    }}
+  ]
+}}
+
+**Constraints:**
+- Only include skills that have prerequisites.
+- A skill can have multiple prerequisites.
+- Ensure no circular dependencies.
+- Base your analysis on pedagogical best practices (foundational concepts before advanced ones).
+"""
+
+
+# US-10-08: AI Assessment Item Generation (Content-Based)
+ASSESSMENT_GENERATION_PROMPT = """
+You are an educational assessment expert. Generate {n_items} multiple-choice assessment items based on the following lesson content.
+
+LESSON CONTENT:
+{context}
+
+DOMAIN: {domain}
+
+REQUIREMENTS:
+- Each item must have exactly 4 options
+- Include the correct answer index (0-3, where 0 is the first option)
+- Provide a brief explanation for why the correct answer is right
+- Assign difficulty level: BEGINNER, INTERMEDIATE, or ADVANCED based on cognitive complexity
+- Questions should test understanding and application, not just memorization
+- Ensure questions are clear, unambiguous, and grammatically correct
+- Distractors (wrong answers) should be plausible but clearly incorrect
+
+OUTPUT FORMAT:
+Return a valid JSON object with this exact structure:
+{{
+  "items": [
+    {{
+      "question": "Clear, specific question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctIndex": 0,
+      "explanation": "Brief explanation of why this answer is correct",
+      "difficulty": "INTERMEDIATE"
+    }}
+  ]
+}}
+
+IMPORTANT: Return ONLY the JSON object, no additional text or markdown formatting.
+"""
+
+# US-10-09: AI Skill Tagging (Content Analysis)
+SKILL_TAGGING_PROMPT = """
+You are a curriculum analysis expert. Analyze the following content and identify the most relevant skill codes that this content teaches or practices.
+
+CONTENT:
+{content}
+
+DOMAIN: {domain}
+
+CONTEXT:
+Available skills in this domain use codes in the format: SKILL_CODE_XXX (e.g., SKILL_CODE_001, SKILL_CODE_002).
+Your task is to identify which skills are explicitly taught, practiced, or required to understand this content.
+
+REQUIREMENTS:
+- Identify 2-5 most relevant skills covered in this content
+- Return skill codes in the standard format: SKILL_CODE_XXX
+- Focus on skills that are DIRECTLY taught or practiced in the content
+- Prioritize core skills over peripheral mentions
+- Only suggest skills that would logically exist in the domain
+- If the content is too generic or doesn't clearly map to specific skills, return fewer codes
+
+OUTPUT FORMAT:
+Return a valid JSON object with this exact structure:
+{{
+  "skill_codes": ["SKILL_CODE_001", "SKILL_CODE_002", "SKILL_CODE_003"]
+}}
+
+IMPORTANT: Return ONLY the JSON object, no additional text or markdown formatting.
+"""

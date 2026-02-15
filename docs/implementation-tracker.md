@@ -120,7 +120,22 @@ Este documento rastrea el progreso de implementación mapeado a las Historias de
 - [x] **US-080: Real AI Replanning**
   - Reemplazar stub en `LearningPlanServiceImpl` con llamada real a AI Service.
 - [x] **US-081: Explicit Prerequisies API**
-  - Añadir endpoints específicos en `SkillController` para gestión de grafo.
+  - Enforce `domainId` as mandatory FK for Skills.
+  - Remove reliance on `code` lookup in SkillController.
+
+- [x] **US-10-06**: AI Skill Discovery (Taxonomy Generation)
+  - Endpoint: `POST /domains/{id}/skills/generate`
+  - Generates list of skills for a topic.
+- [x] **US-10-07**: AI Prerequisite Linking (Graph Generation)
+  - Endpoint: `POST /domains/{id}/skills/link`
+  - Defines dependency graph between skills.
+- [x] **US-10-08**: AI Assessment Item Generation (Content-Based)
+  - Endpoint: `POST /content-items/{id}/assessments/generate`
+  - Generates assessment items from lesson body.
+- [x] **US-10-09**: AI Skill Tagging (Content Analysis)
+  - Endpoint: `POST /content-items/{id}/skills/auto-link`
+  - Auto-associates skills to content items.
+
 - [x] **US-082: OAS/DDL Consistency**
   - Auditoría final de contratos vs código.
 - [x] **US-083: Adaptive Assessment (Real AI)**

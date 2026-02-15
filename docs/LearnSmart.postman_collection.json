@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "ff955095-f677-4304-89e4-82c864c2caf6",
+    "_postman_id": "f8ed0e1b-be99-482e-b880-4460de860c9e",
     "name": "LearnSmart Backend API",
     "description": "Comprehensive collection for the LearnSmart platform backend microservices. Based on verification scripts.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -498,7 +498,7 @@
           "name": "Skills",
           "item": [
             {
-              "name": "Get Skills (Filter by Code)",
+              "name": "Get Skills (Filter by Domain ID)",
               "request": {
                 "method": "GET",
                 "header": [
@@ -508,7 +508,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{gateway_url}}/content/skills?code=react-basics",
+                  "raw": "{{gateway_url}}/content/skills?domainId={{domain_id}}",
                   "host": [
                     "{{gateway_url}}"
                   ],
@@ -518,8 +518,9 @@
                   ],
                   "query": [
                     {
-                      "key": "code",
-                      "value": "react-basics"
+                      "key": "domainId",
+                      "value": "{{domain_id}}",
+                      "description": "US-10-05: Filter by domain UUID"
                     }
                   ]
                 }
@@ -708,6 +709,68 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "Generate Skills",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"topic\": \"React Hooks\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills/domains/{{domain_id}}/generate",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills",
+                    "domains",
+                    "{{domain_id}}",
+                    "generate"
+                  ]
+                },
+                "description": "US-10-06: AI-driven skill taxonomy generation for a given topic"
+              },
+              "response": []
+            },
+            {
+              "name": "Link Prerequisites",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/skills/domains/{{domain_id}}/link",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "skills",
+                    "domains",
+                    "{{domain_id}}",
+                    "link"
+                  ]
+                }
+              },
+              "response": []
             }
           ]
         },
@@ -872,6 +935,68 @@
               "response": []
             },
             {
+              "name": "[Epic 10] Generate Assessment Items (AI)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nItems\": 5\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/{{content_id}}/assessments/generate",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "{{content_id}}",
+                    "assessments",
+                    "generate"
+                  ]
+                },
+                "description": "US-10-08: AI-driven assessment item generation based on content"
+              },
+              "response": []
+            },
+            {
+              "name": "[Epic 10] Auto-Link Skills (AI)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/{{content_id}}/skills/auto-link",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "{{content_id}}",
+                    "skills",
+                    "auto-link"
+                  ]
+                },
+                "description": "US-10-09: AI-driven skill tagging and automatic linking based on content analysis"
+              },
+              "response": []
+            },
+            {
               "name": "Update Content Item",
               "request": {
                 "method": "PUT",
@@ -922,6 +1047,69 @@
                     "content",
                     "content-items",
                     "{{content_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Generate Assessment Items (US-10-08)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nItems\": 5\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/{{content_id}}/assessments/generate",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "{{content_id}}",
+                    "assessments",
+                    "generate"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Auto-Link Skills (US-10-09)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{gateway_url}}/content/content-items/{{content_id}}/skills/auto-link",
+                  "host": [
+                    "{{gateway_url}}"
+                  ],
+                  "path": [
+                    "content",
+                    "content-items",
+                    "{{content_id}}",
+                    "skills",
+                    "auto-link"
                   ]
                 }
               },
@@ -1126,9 +1314,6 @@
                     "value": "application/json"
                   }
                 ],
-                "body": {
-                  "raw": "{\n  \"title\": \"Master React\",\n  \"description\": \"From validation\",\n  \"domainId\": \"{{domain_id}}\",\n  \"targetLevel\": \"INTERMEDIATE\",\n   \"dueDate\": \"2026-12-31\",\n  \"intensity\": \"minimum\"\n}"
-                },
                 "url": {
                   "raw": "{{gateway_url}}/profiles/me/goals",
                   "host": [
@@ -1675,7 +1860,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"domain\": \"react-dev\",\n  \"level\": \"BEGINNER\",\n  \"nQuestions\": 5\n}"
+                  "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"level\": \"BEGINNER\",\n  \"nQuestions\": 5\n}"
                 },
                 "url": {
                   "raw": "{{gateway_url}}/planning/plans/diagnostics",
@@ -2262,7 +2447,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain\": \"react-dev\",\n  \"level\": \"BEGINNER\",\n  \"nQuestions\": 5\n}"
+              "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"level\": \"BEGINNER\",\n  \"nQuestions\": 5\n}"
             },
             "url": {
               "raw": "{{ai_service_url}}/v1/assessments/diagnostic-tests",
@@ -2290,7 +2475,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain\": \"react-dev\",\n  \"nLessons\": 3,\n  \"level\": \"BEGINNER\"\n}"
+              "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"nLessons\": 3,\n  \"level\": \"BEGINNER\"\n}"
             },
             "url": {
               "raw": "{{ai_service_url}}/v1/contents/lessons",
@@ -2318,7 +2503,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain\": \"react-dev\",\n  \"nItems\": 5,\n  \"itemType\": \"multiple_choice\"\n}"
+              "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"nItems\": 5,\n  \"itemType\": \"multiple_choice\"\n}"
             },
             "url": {
               "raw": "{{ai_service_url}}/v1/contents/assessment-items",
@@ -2333,8 +2518,129 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "AI: Generate Skills Taxonomy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"React Hooks\",\n  \"domainId\": \"{{domain_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/contents/skills",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "contents",
+                "skills"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AI: Generate Prerequisites Graph",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skills\": [\n    {\"code\": \"SKILL_001\", \"name\": \"Basic Hooks\", \"description\": \"...\"},\n    {\"code\": \"SKILL_002\", \"name\": \"Custom Hooks\", \"description\": \"...\"}\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/contents/skills/prerequisites",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "contents",
+                "skills",
+                "prerequisites"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AI: Generate Assessment Items",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domainId\": \"{{domain_id}}\",\n  \"nItems\": 3,\n  \"contextText\": \"React is a Javascript library for building user interfaces.\"\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/contents/assessment-items",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "contents",
+                "assessment-items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AI: Analyze Skill Tags",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentText\": \"Using useEffect and useState to manage state and side effects in a component.\",\n  \"domainId\": \"{{domain_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/v1/contents/skill-tags",
+              "host": [
+                "{{ai_service_url}}"
+              ],
+              "path": [
+                "v1",
+                "contents",
+                "skill-tags"
+              ]
+            }
+          },
+          "response": []
         }
       ]
+    },
+    {
+      "name": "Epic 10: AI Content Generation",
+      "item": []
     }
   ],
   "variable": [
@@ -2385,6 +2691,16 @@
     },
     {
       "key": "plan_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "domain_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "content_id",
       "value": "",
       "type": "string"
     }
