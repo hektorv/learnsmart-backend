@@ -218,19 +218,34 @@ def generate_assessment_items(request: models.GenerateAssessmentItemsRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def _extract_skill_list(result: dict) -> list:
+    """Defensive extraction: the LLM may follow the prompt and return
+    {"skills": [...]} or it may use a different top-level key like
+    "taxonomy", "items", etc. We accept the canonical key first and,
+    failing that, return the first list-of-dicts we find in the payload."""
+    if not isinstance(result, dict):
+        return []
+    if isinstance(result.get("skills"), list):
+        return result["skills"]
+    for value in result.values():
+        if isinstance(value, list) and value and isinstance(value[0], dict):
+            return value
+    return []
+
+
 @app.post("/v1/contents/skills", response_model=models.GenerateSkillsResponse)
 def generate_skills(request: models.GenerateSkillsRequest):
     """US-10-06: Generate a taxonomy of skills for a given topic."""
     try:
         val_topic = InputValidator.validate_text(request.topic, "topic")
         val_domain = InputValidator.validate_text(request.domainId, "domainId")
-        
+
         result = llm_service.generate_skills(
             topic=val_topic,
             domain_id=val_domain
         )
-        
-        return models.GenerateSkillsResponse(skills=result.get("skills", []))
+
+        return models.GenerateSkillsResponse(skills=_extract_skill_list(result))
     except HTTPException as e:
         raise e
     except Exception as e:

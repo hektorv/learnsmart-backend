@@ -196,7 +196,31 @@ Generate exactly {n_questions} diagnostic questions to evaluate a student's prio
 
 Return ONLY the JSON object. Do not include markdown or extra text.
 """
-SKILL_TAXONOMY_PROMPT = """Generate skill taxonomy for {topic}. 8-15 skills. Return JSON."""
+SKILL_TAXONOMY_PROMPT = """You are a curriculum designer.
+Generate a taxonomy of educational skills for the topic: {topic}
+(domain context: {domain_id}).
+
+Produce between 8 and 15 skills, ordered from foundational to advanced.
+
+**Output Format (return a single JSON object with EXACTLY this structure):**
+{{
+  "skills": [
+    {{
+      "code": "short-kebab-case-identifier",
+      "name": "Human readable name",
+      "description": "One or two sentences explaining the skill",
+      "level": "BEGINNER",
+      "tags": ["tag1", "tag2"]
+    }}
+  ]
+}}
+
+Rules:
+- The top-level key MUST be "skills".
+- "code" must be unique within the response, lowercase, kebab-case, max 30 chars.
+- "level" must be one of: BEGINNER, INTERMEDIATE, ADVANCED.
+- "tags" is an array of 1-5 short keywords (no whitespace inside a tag).
+"""
 PREREQUISITE_GRAPH_PROMPT = """Analyze dependencies between skills. No circularity. Return JSON."""
 ASSESSMENT_GENERATION_PROMPT = """Generate {n_items} assessment items from: {context}. Return JSON."""
 SKILL_TAGGING_PROMPT = """Identify 2-5 skills for content: {content}. Return JSON."""
